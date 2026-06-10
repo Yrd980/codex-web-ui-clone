@@ -18,15 +18,15 @@ const toneClass = {
 
 export function EnvironmentCard({ items, progress, subagents, running = false }: EnvironmentCardProps) {
   return (
-    <aside className="pointer-events-none absolute right-3 top-4 z-10 hidden w-[min(374px,calc(100%-24px))] shrink-0 px-0 py-0 lg:block 2xl:static 2xl:w-[374px] 2xl:px-5 2xl:py-6">
+    <aside className="pointer-events-none absolute right-3 top-4 z-10 hidden w-[min(374px,calc(100%-24px))] shrink-0 px-0 py-0 lg:block">
       <div className="pointer-events-auto rounded-[22px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_78%,transparent)] shadow-[var(--codex-shadow-soft)] backdrop-blur-sm">
-        <div className="flex h-[54px] items-center justify-between px-5">
+        <div className="flex h-[54px] items-center justify-between gap-3 px-5">
           <button className="flex items-center gap-1.5 text-[15px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button">
             Environment
             <CodexIcon name="chevronDown" className="size-4" />
           </button>
           <button
-            className="grid size-8 place-items-center rounded-[10px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]"
+            className="grid size-8 shrink-0 place-items-center rounded-[9px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]"
             type="button"
             aria-label="Environment settings"
           >
@@ -35,27 +35,29 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
         </div>
         <div className="px-5 pb-4">
           <div className="space-y-4 text-[15px]">
-            <div className="flex items-center gap-3">
-              <CodexIcon name="diff" className="size-[18px] text-[var(--codex-text)]" />
-              <span className="flex-1">Changes</span>
+            <div className="grid grid-cols-[22px_minmax(0,1fr)_auto_auto] items-center gap-2">
+              <CodexIcon name="diff" className="mx-auto size-[18px] text-[var(--codex-text)]" />
+              <span className="truncate leading-none">Changes</span>
+              <span className="text-[var(--codex-diff-added)]">+119</span>
+              <span className="text-[var(--codex-diff-removed)]">-0</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CodexIcon name="terminal" className="size-[18px] text-[var(--codex-text)]" />
-              <span className="flex-1">Local</span>
+            <div className="grid grid-cols-[22px_minmax(0,1fr)_16px] items-center gap-2">
+              <CodexIcon name="terminal" className="mx-auto size-[18px] text-[var(--codex-text)]" />
+              <span className="truncate leading-none">Local</span>
               <CodexIcon name="chevronDown" className="size-4 text-[var(--codex-text-faint)]" />
             </div>
-            <div className="flex items-center gap-3">
-              <CodexIcon name="branch" className="size-[18px] text-[var(--codex-text)]" />
-              <span className="min-w-0 flex-1 truncate">codex/codex-web-ui-clone</span>
+            <div className="grid grid-cols-[22px_minmax(0,1fr)_16px] items-center gap-2">
+              <CodexIcon name="branch" className="mx-auto size-[18px] text-[var(--codex-text)]" />
+              <span className="min-w-0 truncate leading-none">codex/codex-web-ui-clone</span>
               <CodexIcon name="chevronDown" className="size-4 text-[var(--codex-text-faint)]" />
             </div>
-            <div className="flex items-center gap-3">
-              <CodexIcon name="diff" className="size-[18px] text-[var(--codex-text)]" />
-              <span className="flex-1">Commit or push</span>
+            <div className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2">
+              <CodexIcon name="diff" className="mx-auto size-[18px] text-[var(--codex-text)]" />
+              <span className="truncate leading-none">Commit or push</span>
             </div>
-            <div className="flex items-center gap-3 text-[var(--codex-text-faint)]">
-              <CodexIcon name="cloud" className="size-[18px]" />
-              <span className="flex-1">Pull request status unavailable</span>
+            <div className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2 text-[var(--codex-text-faint)]">
+              <CodexIcon name="cloud" className="mx-auto size-[18px]" />
+              <span className="truncate leading-none">Pull request status unavailable</span>
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ interface ChatStreamProps {
 
 export function ChatStream({ messages, running = false }: ChatStreamProps) {
   return (
-    <div className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-[180px] pt-10 text-[15px] leading-[1.65] sm:px-5">
+    <div className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-[190px] pt-10 text-[15px] leading-[1.65] sm:px-5">
       <div className="flex justify-end">
         <div className="max-w-[700px] rounded-[18px] bg-[color-mix(in_oklab,var(--codex-surface-muted)_58%,transparent)] px-4 py-3 text-[15px] text-[var(--codex-text)]">
           你现在只需告诉我文档里面的任务执行完没有，然后在内置的浏览器里面打开网页就好

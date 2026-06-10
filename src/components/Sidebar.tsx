@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { primaryActions } from "../data/mockData";
 import type { ActiveView, ProjectGroup } from "../types";
 import { CodexIcon } from "./CodexIcon";
@@ -9,43 +10,48 @@ interface SidebarProps {
   onSelectThread: (threadId: string) => void;
   onSetView: (view: ActiveView) => void;
   open: boolean;
+  docked: boolean;
+  style: CSSProperties;
 }
 
-export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open }: SidebarProps) {
+export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open, docked, style }: SidebarProps) {
   return (
     <aside
+      style={style}
       className={[
-        "z-40 flex w-[284px] shrink-0 flex-col bg-[var(--codex-sidebar)] px-3 pb-3 pt-2 text-[16px] text-[var(--codex-text-muted)] transition-transform duration-200",
-        "md:relative md:translate-x-0 md:text-[14px]",
-        "max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:shadow-[var(--codex-shadow)]",
-        open ? "max-md:translate-x-0" : "max-md:-translate-x-full",
+        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-hidden bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-transform duration-200 lg:text-[14px]",
+        docked ? "lg:relative lg:translate-x-0" : "lg:absolute lg:inset-y-0 lg:left-0 lg:shadow-[var(--codex-shadow)]",
+        "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw-28px))] max-lg:shadow-[var(--codex-shadow)]",
+        open ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
+        !docked && open ? "lg:translate-x-0" : "",
+        !docked && !open ? "lg:-translate-x-full" : "",
       ].join(" ")}
     >
       <div className="space-y-0.5">
         {primaryActions.map((action) => (
           <button
             key={action.id}
-            className="flex h-10 w-full items-center gap-3 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
+            className="grid h-10 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
             type="button"
             onClick={() => {
               if (action.opensPalette) onOpenPalette();
               if (action.view) onSetView(action.view);
             }}
           >
-            <CodexIcon name={action.icon} className="size-[18px] shrink-0 text-[var(--codex-text)]" />
-            <span className="truncate">{action.label}</span>
+            <CodexIcon name={action.icon} className="mx-auto size-[18px] text-[var(--codex-text)]" />
+            <span className="truncate leading-none">{action.label}</span>
           </button>
         ))}
       </div>
 
       <div className="mt-6 flex-1 overflow-y-auto pr-0.5">
-        <div className="mb-4 px-1.5 text-[16px] text-[var(--codex-text-faint)] md:text-[14px]">Projects</div>
+        <div className="mb-4 px-1.5 text-[15px] leading-none text-[var(--codex-text-faint)] lg:text-[14px]">Projects</div>
         <div className="space-y-3.5">
           {groups.map((group) => (
             <section key={group.id}>
-              <div className="mb-0.5 flex h-8 items-center gap-2 px-1.5 text-[16px] text-[var(--codex-text)] md:text-[14px]">
-                <CodexIcon name="folder" className="size-[17px] shrink-0 text-[var(--codex-text)]" />
-                <span className="truncate">{group.name}</span>
+              <div className="mb-0.5 grid h-8 grid-cols-[24px_minmax(0,1fr)] items-center gap-2 px-1.5 text-[15px] text-[var(--codex-text)] lg:text-[14px]">
+                <CodexIcon name="folder" className="mx-auto size-[17px] text-[var(--codex-text)]" />
+                <span className="truncate leading-none">{group.name}</span>
               </div>
               <div className="space-y-0.5">
                 {group.threads.map((thread) => {
@@ -54,7 +60,7 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                     <button
                       key={thread.id}
                       className={[
-                        "ml-7 flex h-9 w-[calc(100%-1.75rem)] items-center gap-2 rounded-[9px] px-2 text-left transition-colors",
+                        "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors",
                         active ? "bg-transparent text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]",
                       ].join(" ")}
                       type="button"
@@ -63,18 +69,20 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                         onSetView(thread.running ? "running" : "chat");
                       }}
                     >
-                      <span className="min-w-0 flex-1 truncate">{thread.title}</span>
+                      <span />
+                      <span className="min-w-0 flex-1 truncate leading-none">{thread.title}</span>
                       {thread.running ? (
                         <span className="size-2.5 shrink-0 rounded-full bg-[var(--codex-accent)]" />
                       ) : (
-                        <span className="shrink-0 text-[13px] text-[var(--codex-text-faint)] md:text-[12px]">{thread.time}</span>
+                        <span className="shrink-0 text-[12px] leading-none text-[var(--codex-text-faint)]">{thread.time}</span>
                       )}
                     </button>
                   );
                 })}
                 {group.threads.length > 3 ? (
-                  <button className="ml-7 h-8 rounded-[9px] px-2 text-left text-[15px] text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] md:text-[13px]" type="button">
-                    Show more
+                  <button className="grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[13px] leading-none text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)]" type="button">
+                    <span />
+                    <span className="truncate">Show more</span>
                   </button>
                 ) : null}
               </div>
@@ -84,12 +92,12 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
       </div>
 
       <button
-        className="mt-3 flex h-10 w-full items-center gap-3 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
+        className="mt-3 grid h-10 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
         type="button"
         onClick={() => onSetView("settings")}
       >
-        <CodexIcon name="settings" className="size-[19px] text-[var(--codex-text)]" />
-        <span>Settings</span>
+        <CodexIcon name="settings" className="mx-auto size-[19px] text-[var(--codex-text)]" />
+        <span className="truncate leading-none">Settings</span>
       </button>
     </aside>
   );
