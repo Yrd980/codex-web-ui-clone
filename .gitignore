@@ -1,2 +1,4 @@
 .codex-app-asar-inspect/
 .superpowers/
+node_modules/
+dist/
