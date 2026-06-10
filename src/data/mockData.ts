@@ -5,6 +5,7 @@ import type {
   EnvironmentItem,
   FileTab,
   FileTreeItem,
+  IconName,
   NavAction,
   PaletteRow,
   ProgressItem,
@@ -61,14 +62,14 @@ export const chatMessages: ChatMessage[] = [
   {
     id: "user-1",
     role: "user",
-    body: ["参考 docs/superpowers/specs/2026-06-10-codex-web-ui-ux-clone-design.md 给我进行页面的设计"],
+    body: ["参考 docs/superpowers/specs/2026-06-10-codex-web-ui-ux-clone-design.md，把这个网页原型处理到更像 Codex 桌面端。"],
   },
   {
     id: "assistant-1",
     role: "assistant",
     body: [
-      "我会先读项目结构和你给的设计文档，判断它是要落到现有页面还是新增页面。",
-      "这份 spec 的目标很明确：复刻 Codex App 的工作台，而不是做一个通用 AI dashboard。",
+      "我会保留现有 React 组件结构，只处理和参考截图不一致的地方。",
+      "重点是主聊天、工具切换、Review、Files、Settings 和命令面板的视觉语气：低对比、紧凑、桌面应用感。",
     ],
     artifacts: [
       {
@@ -82,16 +83,16 @@ export const chatMessages: ChatMessage[] = [
   {
     id: "tool-1",
     role: "tool",
-    title: "Running checks",
-    body: ["git status --short", "rg --files", "bun run build"],
+    title: "Editing files",
+    body: ["src/styles/tokens.css", "src/components/ChatStream.tsx", "src/components/ReviewWorkspace.tsx"],
     codeTokens: ["Vite", "React", "Tailwind CSS v4"],
   },
   {
     id: "assistant-2",
     role: "assistant",
     body: [
-      "设计方向确认：Vite + React + TypeScript + Tailwind CSS v4。",
-      "页面会直接打开到 app workbench。主聊天、工具切换、Review、Files、Settings、命令面板和 running 状态都会有可切换的静态原型。",
+      "我已经把首屏收回到工作台状态：聊天流是正文优先，右侧环境卡浮在画布上，底部 composer 保持固定。",
+      "接下来会继续校准工具面板，使 Review 和 Files 看起来是附着在当前线程上的 Codex 工具面，而不是独立 dashboard。",
     ],
   },
 ];
@@ -189,14 +190,24 @@ export const commandRows: Array<{
   { id: "settings", title: "Settings", description: "Open app settings", shortcut: "Ctrl ,", view: "settings" },
 ];
 
-export const slashCommands = [
-  { command: "/plan", description: "Toggle plan mode for multi-step work" },
-  { command: "/review", description: "Start code review mode" },
-  { command: "/tools", description: "Open the tool switcher" },
-  { command: "/status", description: "Show thread ID, context, and rate limits" },
-  { command: "/mcp", description: "Open MCP server status" },
-  { command: "/goal", description: "Set a persistent goal" },
-  { command: "/feedback", description: "Open feedback dialog" },
+export const slashCommands: Array<{
+  id: string;
+  label: string;
+  description: string;
+  icon: IconName;
+  insert: string;
+}> = [
+  { id: "review", label: "Code review", description: "Review unstaged changes or compare against a branch", icon: "review", insert: "/review" },
+  { id: "compact", label: "Compact", description: "Compact this thread's context (22% full)", icon: "spinner", insert: "/compact" },
+  { id: "feedback", label: "Feedback", description: "Send feedback about this chat", icon: "sideChat", insert: "/feedback" },
+  { id: "fork", label: "Fork", description: "Fork this chat into local or a new worktree", icon: "external", insert: "/fork" },
+  { id: "goal", label: "Goal", description: "Set a goal that Codex will keep working towards", icon: "history", insert: "/goal" },
+  { id: "mcp", label: "MCP", description: "Show MCP server status", icon: "openFile", insert: "/mcp" },
+  { id: "memories", label: "Memories", description: "Generate on", icon: "cloud", insert: "/memories" },
+  { id: "model", label: "Model", description: "GPT-5.5", icon: "app", insert: "/model" },
+  { id: "personality", label: "Personality", description: "Choose how Codex responds", icon: "history", insert: "/personality" },
+  { id: "pet", label: "Pet", description: "Wake or tuck away the desktop pet", icon: "settings", insert: "/pet" },
+  { id: "plan", label: "Plan mode", description: "Turn plan mode on", icon: "layout", insert: "/plan" },
 ];
 
 export const browserHistory = ["http://127.0.0.1:5173/", "file:///C:/Users/Yrd98/project/aesthetics/dist/index.html", "https://developers.openai.com/codex/app/browser"];

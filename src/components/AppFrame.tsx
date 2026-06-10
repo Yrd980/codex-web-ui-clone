@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
 import type { ActiveView, ProjectGroup } from "../types";
 import { Sidebar } from "./Sidebar";
@@ -14,21 +14,47 @@ interface AppFrameProps {
   children: ReactNode;
 }
 
-const MIN_DOCKED_SIDEBAR_WIDTH = 232;
-const MAX_SIDEBAR_WIDTH = 336;
-const COLLAPSE_SIDEBAR_WIDTH = 112;
+const SIDEBAR_MIN_RATIO = 0.13;
+const SIDEBAR_MAX_RATIO = 0.2;
+const SIDEBAR_DEFAULT_RATIO = 0.18;
+const SIDEBAR_COLLAPSE_RATIO = 0.075;
+const SIDEBAR_FLOATING_EDGE_RATIO = 0.031;
 
-function clampSidebarWidth(width: number) {
-  return Math.min(Math.max(width, MIN_DOCKED_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+function getViewportWidth() {
+  return typeof window === "undefined" ? 1440 : window.innerWidth;
+}
+
+function getSidebarBounds(containerWidth = getViewportWidth()) {
+  const min = Math.round(containerWidth * SIDEBAR_MIN_RATIO);
+  const max = Math.max(min, Math.round(containerWidth * SIDEBAR_MAX_RATIO));
+  return { min, max };
+}
+
+function clampSidebarWidth(width: number, containerWidth = getViewportWidth()) {
+  const { min, max } = getSidebarBounds(containerWidth);
+  return Math.min(Math.max(width, min), max);
+}
+
+function getDefaultSidebarWidth() {
+  return clampSidebarWidth(Math.round(getViewportWidth() * SIDEBAR_DEFAULT_RATIO));
+}
+
+function getCollapseSidebarWidth() {
+  return Math.round(getViewportWidth() * SIDEBAR_COLLAPSE_RATIO);
 }
 
 export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, children }: AppFrameProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarDocked, setSidebarDocked] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(284);
+  const [sidebarRatio, setSidebarRatio] = useState(SIDEBAR_DEFAULT_RATIO);
+  const [viewportWidth, setViewportWidth] = useState(() => getViewportWidth());
   const resizingSidebarRef = useRef(false);
 
-  const sidebarStyle = { "--sidebar-width": `${sidebarWidth}px` } as CSSProperties;
+  const sidebarWidth = sidebarDocked ? clampSidebarWidth(Math.round(viewportWidth * sidebarRatio), viewportWidth) : getDefaultSidebarWidth();
+  const sidebarStyle = {
+    "--sidebar-width": `${sidebarWidth}px`,
+    "--sidebar-floating-edge": `${Math.round(viewportWidth * SIDEBAR_FLOATING_EDGE_RATIO)}px`,
+  } as CSSProperties;
   const sidebarFloating = !sidebarDocked || sidebarOpen;
 
   const handleSetView = (view: ActiveView) => {
@@ -63,12 +89,13 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
     document.body.style.userSelect = "none";
 
     const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
-      if (moveEvent.clientX < COLLAPSE_SIDEBAR_WIDTH) {
+      if (moveEvent.clientX < getCollapseSidebarWidth()) {
         setSidebarDocked(false);
         setSidebarOpen(true);
         return;
       }
-      setSidebarWidth(clampSidebarWidth(moveEvent.clientX));
+      const nextWidth = clampSidebarWidth(moveEvent.clientX, window.innerWidth);
+      setSidebarRatio(nextWidth / window.innerWidth);
     };
 
     const handleUp = () => {
@@ -86,6 +113,15 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", handleUp);
   }, [sidebarDocked]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportWidth(getViewportWidth());
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[var(--codex-window)] text-[var(--codex-text)]">
@@ -122,7 +158,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
             onMouseDown={startSidebarResize}
           />
         ) : null}
-        <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-tl-[16px] border-l border-t border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[inset_1px_1px_0_rgb(255_255_255_/_0.32)] max-lg:rounded-tl-none max-lg:border-l-0">
+        <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-tl-[18px] border-l border-t border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[inset_1px_1px_0_rgb(255_255_255_/_0.32)] max-lg:rounded-tl-none max-lg:border-l-0">
           {children}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import type { EnvironmentItem, ProgressItem, SubagentItem } from "../types";
 import { CodexIcon } from "./CodexIcon";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 
 interface EnvironmentCardProps {
@@ -7,6 +8,9 @@ interface EnvironmentCardProps {
   progress: ProgressItem[];
   subagents: SubagentItem[];
   running?: boolean;
+  panelWidth: number;
+  rightInset: number;
+  topInset: number;
 }
 
 const toneClass = {
@@ -17,7 +21,7 @@ const toneClass = {
   warning: "text-[var(--codex-permission)]",
 };
 
-export function EnvironmentCard({ items, progress, subagents, running = false }: EnvironmentCardProps) {
+export function EnvironmentCard({ items, progress, subagents, running = false, panelWidth, rightInset, topInset }: EnvironmentCardProps) {
   const [environmentMode, setEnvironmentMode] = useState("Local");
   const [menuOpen, setMenuOpen] = useState(false);
   const [commitState, setCommitState] = useState<"ready" | "committed" | "pushed">("ready");
@@ -26,7 +30,10 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
   const [pullRequestState, setPullRequestState] = useState("Pull request status unavailable");
 
   return (
-    <aside className="pointer-events-none absolute right-0 top-4 z-10 hidden w-[min(406px,calc(100%-24px))] shrink-0 px-3 py-0 lg:block">
+    <aside
+      className="pointer-events-none absolute right-[var(--environment-right-inset)] top-[var(--environment-top-inset)] z-10 hidden w-[min(var(--environment-panel-width),calc(100%_-_var(--environment-right-inset)_-_var(--environment-right-inset)))] shrink-0 lg:block"
+      style={{ "--environment-panel-width": `${panelWidth}px`, "--environment-right-inset": `${rightInset}px`, "--environment-top-inset": `${topInset}px` } as CSSProperties}
+    >
       <div className="pointer-events-auto rounded-[22px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_78%,transparent)] shadow-[var(--codex-shadow-soft)] backdrop-blur-sm">
         <div className="relative flex h-[54px] items-center justify-between gap-3 px-5">
           <button className="flex items-center gap-1.5 text-[15px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button" onClick={() => setMenuOpen((open) => !open)}>
@@ -34,7 +41,7 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
             <CodexIcon name="chevronDown" className="size-4" />
           </button>
           {menuOpen ? (
-            <div className="absolute left-4 top-11 z-30 w-[190px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
+            <div className="absolute left-4 top-11 z-30 w-[clamp(11rem,58%,15rem)] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
               {["Local", "Cloud", "Read only"].map((mode) => (
                 <button
                   key={mode}
@@ -60,7 +67,7 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
             <CodexIcon name="settings" className="size-4" />
           </button>
           {settingsOpen ? (
-            <div className="absolute right-4 top-11 z-30 w-[210px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
+            <div className="absolute right-4 top-11 z-30 w-[clamp(12rem,64%,16rem)] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
               {["Permission profile", "Worktree location", "Reset environment"].map((item) => (
                 <button
                   key={item}

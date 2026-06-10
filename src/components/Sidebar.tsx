@@ -1,5 +1,6 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, FocusEvent as ReactFocusEvent, MouseEvent as ReactMouseEvent } from "react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { primaryActions } from "../data/mockData";
 import type { ActiveView, ProjectGroup } from "../types";
 import { CodexIcon } from "./CodexIcon";
@@ -18,14 +19,38 @@ interface SidebarProps {
 export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open, docked, style }: SidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const [activeProjectId, setActiveProjectId] = useState(groups[0]?.id ?? "");
+  const [hoveredThreadPreview, setHoveredThreadPreview] = useState<{
+    title: string;
+    time: string;
+    branch: string;
+    left: number;
+    top: number;
+    width: number;
+  } | null>(null);
+
+  const showThreadPreview = (event: ReactMouseEvent<HTMLElement> | ReactFocusEvent<HTMLElement>, title: string, time: string, branch: string) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = Math.round(window.innerWidth * 0.006);
+    const previewGap = 2;
+    const preferredWidth = Math.round(bounds.width * 0.94);
+    const left = bounds.right + previewGap + preferredWidth + viewportPadding <= window.innerWidth ? Math.round(bounds.right + previewGap) : Math.round(Math.max(viewportPadding, bounds.left));
+    setHoveredThreadPreview({
+      title,
+      time,
+      branch,
+      left,
+      top: Math.round(bounds.top),
+      width: Math.min(preferredWidth, window.innerWidth - left - viewportPadding),
+    });
+  };
 
   return (
     <aside
       style={style}
       className={[
-        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-hidden bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-transform duration-200 lg:text-[14px]",
+        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-transform duration-200 lg:text-[14px]",
         docked ? "lg:relative lg:translate-x-0" : "lg:absolute lg:inset-y-0 lg:left-0 lg:shadow-[var(--codex-shadow)]",
-        "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw-28px))] max-lg:shadow-[var(--codex-shadow)]",
+        "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw_-_var(--sidebar-floating-edge)))] max-lg:shadow-[var(--codex-shadow)]",
         open ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
         !docked && open ? "lg:translate-x-0" : "",
         !docked && !open ? "lg:-translate-x-full" : "",
@@ -66,26 +91,42 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                 {(expandedGroups.includes(group.id) ? group.threads : group.threads.slice(0, 3)).map((thread) => {
                   const active = thread.id === activeThreadId;
                   return (
-                    <button
+                    <div
                       key={thread.id}
-                      className={[
-                        "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors",
-                        active ? "bg-transparent text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]",
-                      ].join(" ")}
-                      type="button"
-                      onClick={() => {
-                        onSelectThread(thread.id);
-                        onSetView(thread.running ? "running" : "chat");
-                      }}
+                      className="group/thread relative"
+                      onMouseEnter={(event) => showThreadPreview(event, thread.title, thread.running ? "" : thread.time, group.id === "aesthetics" ? "codex/codex-web-ui-clone" : group.name)}
+                      onMouseLeave={() => setHoveredThreadPreview(null)}
                     >
-                      <span />
-                      <span className="min-w-0 flex-1 truncate leading-none">{thread.title}</span>
-                      {thread.running ? (
-                        <span className="size-2.5 shrink-0 rounded-full bg-[var(--codex-accent)]" />
-                      ) : (
-                        <span className="shrink-0 text-[12px] leading-none text-[var(--codex-text-faint)]">{thread.time}</span>
-                      )}
-                    </button>
+                      <button
+                        className={[
+                          "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors",
+                          active ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]",
+                        ].join(" ")}
+                        type="button"
+                        onClick={() => {
+                          onSelectThread(thread.id);
+                          onSetView(thread.running ? "running" : "chat");
+                        }}
+                        onFocus={(event) => showThreadPreview(event, thread.title, thread.running ? "" : thread.time, group.id === "aesthetics" ? "codex/codex-web-ui-clone" : group.name)}
+                        onBlur={() => setHoveredThreadPreview(null)}
+                      >
+                        <span />
+                        <span className="min-w-0 flex-1 truncate leading-none">{thread.title}</span>
+                        {thread.running ? (
+                          <span className="size-2.5 shrink-0 rounded-full bg-[var(--codex-accent)] group-hover/thread:opacity-0" />
+                        ) : (
+                          <span className="shrink-0 text-[12px] leading-none text-[var(--codex-text-faint)] group-hover/thread:opacity-0">{thread.time}</span>
+                        )}
+                      </button>
+                      <div className="pointer-events-none absolute right-1.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 text-[var(--codex-text-faint)] group-hover/thread:flex">
+                        <span className="grid size-[22px] place-items-center rounded-[6px] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
+                          <CodexIcon name="pin" className="size-[15px]" />
+                        </span>
+                        <span className="grid size-[22px] place-items-center rounded-[6px] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
+                          <CodexIcon name="tray" className="size-[15px]" />
+                        </span>
+                      </div>
+                    </div>
                   );
                 })}
                 {group.threads.length > 3 ? (
@@ -112,6 +153,24 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
         <CodexIcon name="settings" className="mx-auto size-[19px] text-[var(--codex-text)]" />
         <span className="truncate leading-none">Settings</span>
       </button>
+      {hoveredThreadPreview
+        ? createPortal(
+            <div
+              className="pointer-events-none fixed z-[70] overflow-hidden rounded-[13px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 py-2 text-[13px] text-[var(--codex-text)] shadow-[var(--codex-shadow-soft)]"
+              style={{ left: hoveredThreadPreview.left, top: hoveredThreadPreview.top, width: hoveredThreadPreview.width }}
+            >
+              <div className="flex h-7 items-center gap-3">
+                <div className="min-w-0 flex-1 truncate font-medium">{hoveredThreadPreview.title}</div>
+                <div className="shrink-0 text-[12px] text-[var(--codex-text-faint)]">{hoveredThreadPreview.time}</div>
+              </div>
+              <div className="flex h-6 items-center gap-2 text-[12px] text-[var(--codex-text-muted)]">
+                <CodexIcon name="branch" className="size-4 shrink-0" />
+                <span className="truncate">{hoveredThreadPreview.branch}</span>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </aside>
   );
 }

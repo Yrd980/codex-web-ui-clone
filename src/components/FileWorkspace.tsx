@@ -17,7 +17,7 @@ export function FileWorkspace() {
           {fileTabs.map((tab) => (
             <button
               key={tab.id}
-              className={["flex h-8 max-w-[280px] items-center gap-2 rounded-[9px] px-3 text-[12px]", tab.id === activeTabId ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]"].join(" ")}
+              className={["flex h-8 max-w-[32%] items-center gap-2 rounded-[9px] px-3 text-[12px]", tab.id === activeTabId ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]"].join(" ")}
               type="button"
               onClick={() => {
                 setActiveTabId(tab.id);
@@ -33,16 +33,16 @@ export function FileWorkspace() {
           {activeTab?.path} / {activePath}
         </div>
         <article className="min-h-0 flex-1 overflow-auto px-5 py-7 xl:px-8">
-          <div className="max-w-[860px]">
+          <div className="max-w-[92%]">
             <h1 className="mb-5 text-[30px] font-medium leading-tight text-[var(--codex-text)]">{activePath}</h1>
             <p className="mb-4 text-[15px] leading-7 text-[var(--codex-text-muted)]">
-              This static file shell mirrors the Codex file viewer: tabs, tree selection, path context, and code-copy affordance are all local UI state.
+              The first implementation should open directly into a Codex-style workbench and preserve the current thread while files are inspected.
             </p>
-            <h2 className="mb-3 mt-8 text-[18px] font-medium">Visible file state</h2>
+            <h2 className="mb-3 mt-8 text-[18px] font-medium">Confirmed prototype direction</h2>
             <ul className="mb-6 space-y-2 text-[14px] text-[var(--codex-text-muted)]">
-              <li>Active tab: {activeTab?.title}</li>
-              <li>Selected path: {activePath}</li>
-              <li>Filter: {filter || "none"}</li>
+              <li>Use Vite, React, TypeScript, and Tailwind CSS v4.</li>
+              <li>Keep Codex theme values in editable CSS variables.</li>
+              <li>Use static data first; visual and interaction fidelity matter more than backend behavior.</li>
             </ul>
             <div className="relative rounded-[14px] bg-[var(--codex-surface-muted)] p-4 text-[12px] leading-6">
               <button
@@ -63,7 +63,7 @@ export function FileWorkspace() {
           </div>
         </article>
       </section>
-      <aside className="hidden w-[220px] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block 2xl:w-[248px]">
+      <aside className="hidden w-[26%] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block">
         <label className="mb-3 flex h-9 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_55%,transparent)] px-3 text-[var(--codex-text-faint)]">
           <CodexIcon name="search" className="size-4" />
           <input className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-[var(--codex-text-faint)]" placeholder="Filter files..." value={filter} onChange={(event) => setFilter(event.currentTarget.value)} />

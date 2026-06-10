@@ -38,14 +38,14 @@ export function TopMenu({ onToggleSidebar }: TopMenuProps) {
         >
           <CodexIcon name="forward" className="size-[18px]" />
         </button>
-        <span className="hidden max-w-[220px] truncate px-2 text-[12px] text-[var(--codex-text-faint)] lg:block">{windowStatus === "Window active" ? navStatus : windowStatus}</span>
+        <span className="hidden max-w-[clamp(10rem,18vw,16rem)] truncate px-2 text-[12px] text-[var(--codex-text-faint)] lg:block">{windowStatus === "Window active" ? navStatus : windowStatus}</span>
         {Object.keys(menuRows).map((item) => (
           <div key={item} className="relative hidden md:block">
             <button className={["rounded-[8px] px-2.5 py-1.5 hover:bg-[var(--codex-hover)]", openMenu === item ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")} type="button" onClick={() => setOpenMenu(openMenu === item ? null : item)}>
               {item}
             </button>
             {openMenu === item ? (
-              <div className="absolute left-0 top-[34px] z-50 w-[190px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
+              <div className="absolute left-0 top-full z-50 mt-1 w-[clamp(11rem,14vw,14rem)] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
                 {menuRows[item].map((row) => (
                   <button
                     key={row}

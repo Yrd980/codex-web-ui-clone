@@ -4,7 +4,9 @@ A Vite + React + TypeScript prototype that recreates the Codex desktop app works
 
 ## Preview
 
-![Codex web UI clone workbench](docs/visuals/codex-web-ui-clone-workbench.png)
+![Codex web UI clone proportional workbench reference](docs/visuals/codex-web-ui-clone-readme-reference.png)
+
+The README preview tracks the current proportional layout target: a Codex-style workbench with a docked project sidebar, centered chat stream, floating environment card, and fixed bottom composer.
 
 ## What It Includes
 

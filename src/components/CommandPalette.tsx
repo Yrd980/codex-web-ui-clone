@@ -29,7 +29,7 @@ export function CommandPalette({ open, mode, onClose, onOpenSettings, onSetView 
   return (
     <div className="absolute inset-0 z-50 grid place-items-start bg-[var(--codex-overlay-dim)] px-4 pt-[14vh] backdrop-blur-[2px]" onClick={onClose}>
       <div
-        className="mx-auto w-full max-w-[650px] overflow-hidden rounded-[24px] border border-[var(--codex-border)] bg-[var(--codex-surface-raised)] shadow-[var(--codex-shadow)]"
+        className="mx-auto w-[min(92%,46vw)] overflow-hidden rounded-[24px] border border-[var(--codex-border)] bg-[var(--codex-surface-raised)] shadow-[var(--codex-shadow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex h-14 items-center gap-3 border-b border-[var(--codex-border-soft)] px-4">

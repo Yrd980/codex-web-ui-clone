@@ -1,6 +1,5 @@
 import type { ChatMessage } from "../types";
 import { CodexIcon } from "./CodexIcon";
-import { useState } from "react";
 
 interface ChatStreamProps {
   messages: ChatMessage[];
@@ -8,91 +7,13 @@ interface ChatStreamProps {
 }
 
 export function ChatStream({ messages, running = false }: ChatStreamProps) {
-  const [previewAction, setPreviewAction] = useState("Website");
-  const [copiedPreview, setCopiedPreview] = useState(false);
-  const [openMenu, setOpenMenu] = useState(false);
-
   return (
-    <div className="mx-auto flex w-full max-w-[936px] flex-col gap-8 px-4 pb-[190px] pt-10 text-[15px] leading-[1.65] sm:px-5">
-      <div className="flex justify-end">
-        <div className="max-w-[700px] rounded-[18px] bg-[color-mix(in_oklab,var(--codex-surface-muted)_58%,transparent)] px-4 py-3 text-[15px] text-[var(--codex-text)]">
-          你现在只需告诉我文档里面的任务执行完没有，然后在内置的浏览器里面打开网页就好
-        </div>
-      </div>
-      <div className="space-y-5 border-b border-[var(--codex-border-soft)] pb-5 text-[var(--codex-text-muted)]">
-        <button className="flex items-center gap-2 text-[14px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button">
-          Worked for 2m 44s
-          <CodexIcon name="chevronDown" className="size-4 -rotate-90" />
-        </button>
-        <p>
-          结论：严格按文档清单看，还没有完全执行完。主体页面实现已经在，
-          <code className="rounded-[7px] bg-[var(--codex-surface-muted)] px-2 py-0.5 text-[13px] text-[var(--codex-text)]">bun run build</code>
-          也通过了；但文档里的复选框没更新，计划中的提交步骤也没完成，工作区还有未提交改动。
-        </p>
-        <p className="flex flex-wrap items-center gap-2">
-          内置浏览器已经打开网页：
-          <span className="inline-flex items-center gap-1.5 rounded-[7px] bg-[color-mix(in_oklab,var(--codex-accent)_12%,transparent)] px-2 py-0.5 text-[var(--codex-accent)]">
-            <CodexIcon name="globe" className="size-4" />
-            http://127.0.0.1:5173/
-          </span>
-        </p>
-        <div className="rounded-[13px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_52%,transparent)] p-3">
-          <div className="flex items-center gap-3">
-            <span className="grid size-12 shrink-0 place-items-center rounded-[11px] bg-[var(--codex-surface-muted)] text-cyan-400">
-              <CodexIcon name="globe" className="size-7" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="font-medium text-[var(--codex-text)]">Web preview</div>
-              <div className="mt-0.5 text-[13px] text-[var(--codex-text-faint)]">{previewAction}</div>
-            </div>
-            <div className="relative">
-              <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-[11px] border border-[var(--codex-border-soft)] px-3 text-[13px] text-[var(--codex-text)] hover:bg-[var(--codex-hover)]" type="button" onClick={() => setOpenMenu((open) => !open)}>
-                Open in
-                <CodexIcon name="chevronDown" className="size-4" />
-              </button>
-              {openMenu ? (
-                <div className="absolute right-0 top-10 z-30 w-[150px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
-                  {["Browser", "Files", "External"].map((item) => (
-                    <button
-                      key={item}
-                      className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
-                      type="button"
-                      onClick={() => {
-                        setPreviewAction(item);
-                        setOpenMenu(false);
-                      }}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 text-[var(--codex-text-faint)]">
-          <button
-            className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]"
-            type="button"
-            aria-label="Copy preview link"
-            onClick={() => {
-              setCopiedPreview(true);
-              setPreviewAction("Link copied");
-              window.setTimeout(() => setCopiedPreview(false), 1000);
-            }}
-          >
-            <CodexIcon name={copiedPreview ? "check" : "copy"} className="size-4" />
-          </button>
-          <button className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Open preview externally" onClick={() => setPreviewAction("External selected")}>
-            <CodexIcon name="external" className="size-4" />
-          </button>
-        </div>
-      </div>
+    <div className="mx-auto flex w-[min(var(--chat-track-width),calc(100%_-_var(--chat-track-inline-guard)_-_var(--chat-track-inline-guard)))] translate-x-[var(--chat-track-offset)] flex-col gap-8 pb-[var(--chat-stream-bottom-pad)] pt-10 text-[15px] leading-[1.65]">
       {messages.map((message) => {
         if (message.role === "user") {
           return (
             <div key={message.id} className="flex justify-end">
-              <div className="max-w-[660px] rounded-[18px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-4 py-3 shadow-[0_8px_30px_rgb(76_79_105_/_0.06)]">
+              <div className="max-w-[min(72%,48rem)] rounded-[18px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-4 py-3 shadow-[0_8px_30px_rgb(76_79_105_/_0.06)]">
                 {message.body.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}

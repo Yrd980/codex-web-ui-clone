@@ -16,13 +16,29 @@ interface ChatWorkspaceProps {
   onSetView: (view: ActiveView) => void;
 }
 
-const MIN_TOOL_PANEL_WIDTH = 420;
-const MAX_TOOL_PANEL_WIDTH = 920;
-const MIN_CHAT_WIDTH = 440;
-const RIGHT_RAIL_MIN_WORKSPACE_WIDTH = 1320;
-const TOOL_SWITCHER_RAIL_WIDTH = 456;
-const ENVIRONMENT_RESERVED_WIDTH = 406;
-const WORKSPACE_GUTTER_WIDTH = 64;
+const TOOL_PANEL_MIN_RATIO = 0.3;
+const TOOL_PANEL_MAX_RATIO = 0.58;
+const TOOL_PANEL_DEFAULT_RATIO = 0.42;
+const CHAT_MIN_RATIO = 0.34;
+const CHAT_TRACK_RATIO = 0.78;
+const ENVIRONMENT_PANEL_RATIO = 0.238;
+const ENVIRONMENT_RIGHT_INSET_RATIO = 0.01;
+const ENVIRONMENT_TOP_INSET_RATIO = 0.018;
+const TOOL_SWITCHER_WIDTH_RATIO = 0.4;
+const TOOL_SWITCHER_HEIGHT_RATIO = 0.54;
+const TOOL_SWITCHER_EDGE_GAP_RATIO = 0.035;
+const TOOL_SWITCHER_VERTICAL_CLEARANCE_RATIO = 0.12;
+const COMPOSER_BOTTOM_RATIO = 0.033;
+const COMPOSER_TOP_FADE_RATIO = 0.059;
+const COMPOSER_TEXTAREA_RATIO = 0.031;
+const COMPOSER_INLINE_PAD_RATIO = 0.01;
+const COMPOSER_SURFACE_PAD_Y_RATIO = 0.008;
+const CHAT_STREAM_BOTTOM_RATIO = 0.22;
+const CHAT_TRACK_INLINE_GUARD_RATIO = 0.026;
+const PANEL_OVERLAY_EDGE_RATIO = 0.018;
+const BROWSER_PREVIEW_INSET_X_RATIO = 0.058;
+const BROWSER_PREVIEW_INSET_Y_RATIO = 0.064;
+const ENVIRONMENT_MIN_VISIBLE_WIDTH = 1024;
 const terminalSeedLines = [
   "PS C:\\Users\\Yrd98\\project\\aesthetics> bun run build",
   "tsc --noEmit && vite build",
@@ -30,15 +46,19 @@ const terminalSeedLines = [
 ];
 
 function clampToolPanelWidth(width: number, containerWidth: number) {
-  const maxWidth = Math.max(MIN_TOOL_PANEL_WIDTH, Math.min(MAX_TOOL_PANEL_WIDTH, containerWidth - MIN_CHAT_WIDTH));
-  return Math.min(Math.max(width, MIN_TOOL_PANEL_WIDTH), maxWidth);
+  const chatMinWidth = Math.round(containerWidth * CHAT_MIN_RATIO);
+  const availableForPanel = Math.max(0, containerWidth - chatMinWidth);
+  const minWidth = Math.min(Math.round(containerWidth * TOOL_PANEL_MIN_RATIO), availableForPanel);
+  const maxWidth = Math.max(minWidth, Math.min(Math.round(containerWidth * TOOL_PANEL_MAX_RATIO), availableForPanel));
+  return Math.min(Math.max(width, minWidth), maxWidth);
 }
 
 export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: ChatWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const resizingRef = useRef(false);
-  const [toolPanelWidth, setToolPanelWidth] = useState(680);
+  const [toolPanelRatio, setToolPanelRatio] = useState(TOOL_PANEL_DEFAULT_RATIO);
   const [workspaceWidth, setWorkspaceWidth] = useState(0);
+  const [workspaceHeight, setWorkspaceHeight] = useState(0);
   const [browserIndex, setBrowserIndex] = useState(0);
   const [browserUseEnabled, setBrowserUseEnabled] = useState(true);
   const [annotationMode, setAnnotationMode] = useState(false);
@@ -48,11 +68,44 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
   const [environmentOpen, setEnvironmentOpen] = useState(true);
   const running = activeView === "running";
   const hasToolOverlay = ["tool-switcher", "review", "files", "terminal", "browser", "plugins", "automations"].includes(activeView);
-  const showRightRail = workspaceWidth >= RIGHT_RAIL_MIN_WORKSPACE_WIDTH;
   const browserUrl = browserHistory[browserIndex] ?? browserHistory[0];
-  const environmentReservedWidth = environmentOpen && !hasToolOverlay ? ENVIRONMENT_RESERVED_WIDTH + WORKSPACE_GUTTER_WIDTH : 0;
+  const canReserveEnvironment = workspaceWidth >= ENVIRONMENT_MIN_VISIBLE_WIDTH && workspaceWidth > workspaceHeight * 1.15;
+  const environmentPanelWidth = Math.round(workspaceWidth * ENVIRONMENT_PANEL_RATIO);
+  const environmentRightInset = Math.round(workspaceWidth * ENVIRONMENT_RIGHT_INSET_RATIO);
+  const environmentTopInset = Math.round(workspaceHeight * ENVIRONMENT_TOP_INSET_RATIO);
+  const environmentReservedWidth = environmentOpen && !hasToolOverlay && canReserveEnvironment ? environmentPanelWidth + environmentRightInset : 0;
+  const chatTrackWidth = Math.round((workspaceWidth - environmentReservedWidth) * CHAT_TRACK_RATIO);
+  const chatTrackOffset = 0;
+  const composerTrackWidth = chatTrackWidth;
+  const composerTrackOffset = chatTrackOffset;
+  const toolSwitcherEdgeGap = Math.round(workspaceWidth * TOOL_SWITCHER_EDGE_GAP_RATIO);
+  const toolSwitcherWidth = Math.round(workspaceWidth * TOOL_SWITCHER_WIDTH_RATIO);
+  const toolSwitcherHeight = Math.round(workspaceHeight * TOOL_SWITCHER_HEIGHT_RATIO);
+  const toolPanelWidth = clampToolPanelWidth(Math.round(workspaceWidth * toolPanelRatio), workspaceWidth);
+  const panelOverlayEdge = Math.round(workspaceWidth * PANEL_OVERLAY_EDGE_RATIO);
+  const browserPreviewInsetX = Math.round(toolPanelWidth * BROWSER_PREVIEW_INSET_X_RATIO);
+  const browserPreviewInsetY = Math.round(workspaceHeight * BROWSER_PREVIEW_INSET_Y_RATIO);
+  const composerBottomPad = Math.round(workspaceHeight * COMPOSER_BOTTOM_RATIO);
+  const composerTopFade = Math.round(workspaceHeight * COMPOSER_TOP_FADE_RATIO);
+  const composerInlinePad = Math.round(workspaceWidth * COMPOSER_INLINE_PAD_RATIO);
+  const composerSurfacePadY = Math.round(workspaceHeight * COMPOSER_SURFACE_PAD_Y_RATIO);
+  const composerTextareaHeight = Math.round(workspaceHeight * COMPOSER_TEXTAREA_RATIO);
+  const chatStreamBottomPad = Math.round(workspaceHeight * CHAT_STREAM_BOTTOM_RATIO);
+  const chatTrackInlineGuard = Math.round(workspaceWidth * CHAT_TRACK_INLINE_GUARD_RATIO);
 
-  const toolPanelStyle = { "--tool-panel-width": `${toolPanelWidth}px` } as CSSProperties;
+  const chatTrackStyle = {
+    "--chat-track-width": `${chatTrackWidth}px`,
+    "--chat-track-offset": `${chatTrackOffset}px`,
+    "--chat-stream-bottom-pad": `${chatStreamBottomPad}px`,
+    "--chat-track-inline-guard": `${chatTrackInlineGuard}px`,
+  } as CSSProperties;
+  const toolPanelStyle = { "--tool-panel-width": `${toolPanelWidth}px`, "--panel-overlay-edge": `${panelOverlayEdge}px` } as CSSProperties;
+  const toolSwitcherStyle = {
+    "--tool-switcher-width": `${toolSwitcherWidth}px`,
+    "--tool-switcher-height": `${toolSwitcherHeight}px`,
+    "--tool-switcher-edge-gap": `${toolSwitcherEdgeGap}px`,
+    "--tool-switcher-vertical-clearance": `${Math.round(workspaceHeight * TOOL_SWITCHER_VERTICAL_CLEARANCE_RATIO)}px`,
+  } as CSSProperties;
 
   const startPanelResize = useCallback((event: ReactMouseEvent<HTMLButtonElement> | ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0 || resizingRef.current) return;
@@ -69,7 +122,8 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
 
     const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
       const bounds = workspace.getBoundingClientRect();
-      setToolPanelWidth(clampToolPanelWidth(bounds.right - moveEvent.clientX, bounds.width));
+      const nextWidth = clampToolPanelWidth(bounds.right - moveEvent.clientX, bounds.width);
+      setToolPanelRatio(nextWidth / bounds.width);
     };
 
     const handleUp = () => {
@@ -90,10 +144,11 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
 
   useEffect(() => {
     const updateWorkspaceSize = () => {
-      const width = workspaceRef.current?.getBoundingClientRect().width;
+      const bounds = workspaceRef.current?.getBoundingClientRect();
+      const width = bounds?.width;
       if (!width) return;
       setWorkspaceWidth(width);
-      setToolPanelWidth((current) => clampToolPanelWidth(current, width));
+      setWorkspaceHeight(bounds.height);
     };
 
     updateWorkspaceSize();
@@ -157,16 +212,30 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
             {browserUseEnabled ? "Browser use on" : "Browser use off"}
           </button>
         </div>
-        <div className="grid min-h-0 flex-1 place-items-center text-center text-[13px] text-[var(--codex-text-muted)]">
-          <div className="relative w-[min(420px,calc(100%-40px))] rounded-[14px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-6 py-8 shadow-[0_10px_34px_rgb(76_79_105_/_0.08)]">
-            <CodexIcon name="browser" className="mx-auto mb-3 size-8 text-[var(--codex-text-faint)]" />
-            <div className="text-[15px] font-medium text-[var(--codex-text)]">In-app browser preview</div>
-            <p className="mt-2">Previewing {browserUrl.replace(/^https?:\/\//, "")}</p>
-            {annotationMode ? (
-              <div className="absolute right-5 top-5 rounded-[10px] border border-[var(--codex-accent)] bg-[color-mix(in_oklab,var(--codex-accent)_10%,white)] px-3 py-2 text-left text-[12px] text-[var(--codex-accent)]">
-                Comment pinned
+        <div className="min-h-0 flex-1 overflow-hidden bg-[color-mix(in_oklab,var(--codex-surface-raised)_45%,var(--codex-main))]">
+          <div
+            className="mx-auto h-[calc(100%_-_var(--browser-preview-inset-y)_-_var(--browser-preview-inset-y))] w-[calc(100%_-_var(--browser-preview-inset-x)_-_var(--browser-preview-inset-x))] overflow-hidden rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)]"
+            style={{ "--browser-preview-inset-x": `${browserPreviewInsetX}px`, "--browser-preview-inset-y": `${browserPreviewInsetY}px`, marginTop: browserPreviewInsetY } as CSSProperties}
+          >
+            <div className="flex h-10 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-faint)]">
+              <span className="size-2 rounded-full bg-[var(--codex-border)]" />
+              <span className="size-2 rounded-full bg-[var(--codex-border)]" />
+              <span className="size-2 rounded-full bg-[var(--codex-border)]" />
+              <span className="ml-2 truncate">{browserUrl.replace(/^https?:\/\//, "")}</span>
+            </div>
+            <div className="px-6 py-5 text-[13px] leading-6 text-[var(--codex-text-muted)]">
+              <div className="mb-4 h-4 w-40 rounded-[6px] bg-[var(--codex-surface-muted)]" />
+              <div className="space-y-2">
+                <div className="h-3 w-full max-w-[72%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
+                <div className="h-3 w-full max-w-[64%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
+                <div className="h-3 w-full max-w-[54%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
               </div>
-            ) : null}
+              {annotationMode ? (
+                <div className="mt-6 inline-flex rounded-[10px] border border-[var(--codex-accent)] bg-[color-mix(in_oklab,var(--codex-accent)_9%,transparent)] px-3 py-2 text-[12px] text-[var(--codex-accent)]">
+                  Comment pinned
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -207,7 +276,7 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
             return (
               <button
                 key={item}
-                className="mb-2 flex min-h-11 w-full items-center gap-3 rounded-[10px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 text-left hover:bg-[var(--codex-hover)]"
+                className="flex min-h-10 w-full items-center gap-3 rounded-[9px] px-3 text-left hover:bg-[var(--codex-hover)]"
                 type="button"
                 onClick={() => {
                   if (activeView === "plugins") {
@@ -294,12 +363,20 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
       </header>
       <div ref={workspaceRef} className="relative flex min-h-0 flex-1 overflow-hidden">
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" style={{ marginLeft: environmentReservedWidth ? WORKSPACE_GUTTER_WIDTH : undefined, marginRight: environmentReservedWidth }}>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-gutter:stable_both-edges]" style={{ ...chatTrackStyle, marginRight: environmentReservedWidth }}>
             <ChatStream messages={chatMessages} running={running} />
           </div>
           <Composer
             running={running}
-            reservedRight={environmentReservedWidth}
+            inlineStartOffset={0}
+            inlineEndOffset={environmentReservedWidth}
+            trackWidth={composerTrackWidth}
+            trackOffset={composerTrackOffset}
+            bottomPadding={composerBottomPad}
+            topFade={composerTopFade}
+            inlinePadding={composerInlinePad}
+            surfacePaddingY={composerSurfacePadY}
+            textareaHeight={composerTextareaHeight}
             onToggleRunning={() => onSetView(running ? "chat" : "running")}
             onOpenTools={() => {
               setEnvironmentOpen(false);
@@ -309,14 +386,14 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
         </div>
         {activeView === "tool-switcher" ? (
           <div
-            className="absolute bottom-[118px] right-5 z-20 h-[min(520px,calc(100%-150px))] w-[min(456px,calc(100%-40px))] overflow-hidden rounded-[18px] border border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:inset-y-0 xl:right-0 xl:bottom-auto xl:h-auto xl:w-[456px] xl:rounded-none xl:border-y-0 xl:border-r-0 xl:shadow-none"
-            style={{ "--tool-switcher-width": `${TOOL_SWITCHER_RAIL_WIDTH}px` } as CSSProperties}
+            className="absolute right-[var(--tool-switcher-edge-gap)] top-1/2 z-20 h-[min(var(--tool-switcher-height),calc(100%_-_var(--tool-switcher-vertical-clearance)))] w-[min(var(--tool-switcher-width),calc(100%_-_var(--tool-switcher-edge-gap)_-_var(--tool-switcher-edge-gap)))] -translate-y-1/2 overflow-hidden rounded-[18px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-main)_92%,transparent)] shadow-[var(--codex-shadow-soft)]"
+            style={toolSwitcherStyle}
           >
             <ToolSwitcher onSetView={onSetView} />
           </div>
         ) : activeView === "review" ? (
           <div
-            className="absolute inset-y-0 right-0 z-20 w-[min(var(--tool-panel-width),calc(100%-28px))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+            className="absolute inset-y-0 right-0 z-20 w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
             style={toolPanelStyle}
           >
             {resizeHandle}
@@ -324,7 +401,7 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
           </div>
         ) : activeView === "files" ? (
           <div
-            className="absolute inset-y-0 right-0 z-20 w-[min(var(--tool-panel-width),calc(100%-28px))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+            className="absolute inset-y-0 right-0 z-20 w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
             style={toolPanelStyle}
           >
             {resizeHandle}
@@ -332,7 +409,7 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
           </div>
         ) : activeView === "terminal" || activeView === "browser" ? (
           <div
-            className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%-28px))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+            className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
             style={toolPanelStyle}
           >
             {resizeHandle}
@@ -340,14 +417,14 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
           </div>
         ) : activeView === "plugins" || activeView === "automations" ? (
           <div
-            className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%-28px))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+            className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
             style={toolPanelStyle}
           >
             {resizeHandle}
             {adminPanel}
           </div>
-        ) : environmentOpen ? (
-          <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} />
+        ) : environmentOpen && canReserveEnvironment ? (
+          <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} panelWidth={environmentPanelWidth} rightInset={environmentRightInset} topInset={environmentTopInset} />
         ) : null}
       </div>
     </section>

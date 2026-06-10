@@ -69,7 +69,7 @@ export function SettingsView({ activeSection, onSetSection }: SettingsViewProps)
 
   return (
     <section className="flex h-full min-h-0 bg-[var(--codex-main)]">
-      <aside className="hidden w-[230px] shrink-0 border-r border-[var(--codex-border-soft)] px-3 py-5 text-[13px] text-[var(--codex-text-muted)] md:block">
+      <aside className="hidden w-[18%] shrink-0 border-r border-[var(--codex-border-soft)] px-3 py-5 text-[13px] text-[var(--codex-text-muted)] md:block">
         {sections.map((item) => (
           <button
             key={item}
@@ -81,11 +81,11 @@ export function SettingsView({ activeSection, onSetSection }: SettingsViewProps)
           </button>
         ))}
       </aside>
-      <main className="min-w-0 flex-1 overflow-auto px-8 py-16">
-        <div className="mx-auto max-w-[760px]">
+      <main className="min-w-0 flex-1 overflow-auto px-[clamp(1.25rem,4vw,3rem)] py-[clamp(2.5rem,7vh,5rem)]">
+        <div className="mx-auto max-w-[74%]">
           <h1 className="text-[28px] font-medium">{activeSection}</h1>
           <p className="mt-2 text-[14px] text-[var(--codex-text-muted)]">{sectionDescriptions[activeSection]}</p>
-          <div className="mt-8 overflow-hidden rounded-[16px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)]">
+          <div className="mt-8 overflow-hidden rounded-[14px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_72%,transparent)]">
             {activeSection === "Keyboard Shortcuts"
               ? shortcutRows.map(([label, shortcut]) => (
                   <button key={label} className="flex h-[52px] w-full items-center border-b border-[var(--codex-border-soft)] px-4 text-left last:border-b-0 hover:bg-[var(--codex-hover)]" type="button">
@@ -99,18 +99,40 @@ export function SettingsView({ activeSection, onSetSection }: SettingsViewProps)
                       <div className="text-[14px] font-medium">{label}</div>
                       <div className="mt-1 text-[12px] text-[var(--codex-text-faint)]">{description}</div>
                     </div>
-                    {label === "Active model" ? (
+                    {label === "Animations" || label === "Browser Use" || label === "Computer Use" ? (
+                      <button
+                        className={["relative h-6 w-11 rounded-full transition-colors", enabledRows.includes(label) ? "bg-[var(--codex-accent)]" : "bg-[var(--codex-surface-muted)]"].join(" ")}
+                        type="button"
+                        aria-label={`Toggle ${label}`}
+                        onClick={() => toggleRow(label)}
+                      >
+                        <span className={["absolute top-1 size-4 rounded-full bg-white transition-transform", enabledRows.includes(label) ? "translate-x-[22px]" : "translate-x-1"].join(" ")} />
+                      </button>
+                    ) : label === "Work mode" ? (
+                      <div className="flex h-9 overflow-hidden rounded-[10px] bg-[var(--codex-surface-muted)] p-0.5 text-[12px]">
+                        {["Agent", "Chat"].map((item) => (
+                          <button
+                            key={item}
+                            className={["rounded-[8px] px-3", value === item ? "bg-[var(--codex-surface-raised)] text-[var(--codex-text)] shadow-[0_1px_3px_rgb(76_79_105_/_0.08)]" : "text-[var(--codex-text-faint)]"].join(" ")}
+                            type="button"
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    ) : label === "Active model" ? (
                       <button className="flex h-9 items-center gap-2 rounded-[10px] bg-[var(--codex-surface-muted)] px-3 text-[12px]" type="button" onClick={() => setModelProfile(modelProfile === "5.5 Extra High" ? "5.5 Medium" : "5.5 Extra High")}>
                         {value}
                         <CodexIcon name="chevronDown" className="size-4" />
                       </button>
                     ) : (
                       <button
-                        className="flex h-9 min-w-[96px] items-center justify-center rounded-[10px] bg-[var(--codex-surface-muted)] px-3 text-[12px]"
+                        className="flex h-9 min-w-[96px] items-center justify-center gap-1.5 rounded-[10px] bg-[var(--codex-surface-muted)] px-3 text-[12px]"
                         type="button"
                         onClick={() => toggleRow(label)}
                       >
                         {value}
+                        <CodexIcon name="chevronDown" className="size-4 text-[var(--codex-text-faint)]" />
                       </button>
                     )}
                   </div>

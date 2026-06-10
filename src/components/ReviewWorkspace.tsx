@@ -62,26 +62,28 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           <span className="text-[var(--codex-diff-added)]">+{staged ? 97 : 119}</span>
           <span className="text-[var(--codex-diff-removed)]">-{staged ? 7 : 0}</span>
           <span className="flex-1" />
-          <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)]" type="button" aria-label="More" onClick={() => setMoreOpen((open) => !open)}>
-            <CodexIcon name="more" className="size-4" />
-          </button>
-          {moreOpen ? (
-            <div className="absolute right-[168px] top-[88px] z-30 w-[164px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
-              {["Revert hunk", "Copy file path", "Open in files"].map((item) => (
-                <button
-                  key={item}
-                  className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
-                  type="button"
-                  onClick={() => {
-                    if (item === "Open in files") onSetView("files");
-                    setMoreOpen(false);
-                  }}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <div className="relative">
+            <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)]" type="button" aria-label="More" onClick={() => setMoreOpen((open) => !open)}>
+              <CodexIcon name="more" className="size-4" />
+            </button>
+            {moreOpen ? (
+              <div className="absolute right-0 top-full z-30 mt-1 w-[18vw] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
+                {["Revert hunk", "Copy file path", "Open in files"].map((item) => (
+                  <button
+                    key={item}
+                    className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
+                    type="button"
+                    onClick={() => {
+                      if (item === "Open in files") onSetView("files");
+                      setMoreOpen(false);
+                    }}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <button
             className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3"
             type="button"
@@ -99,16 +101,16 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
             {prState === "created" ? "PR ready" : "Create PR"}
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-auto p-4">
+        <div className="min-h-0 flex-1 overflow-auto bg-[color-mix(in_oklab,var(--codex-surface-muted)_36%,transparent)] px-4 py-3">
           {diffFiles.map((file) => (
-            <div key={file.path} className="overflow-hidden rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)]">
+            <div key={file.path} className="overflow-hidden border-y border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_64%,transparent)]">
               <div className="flex h-10 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px]">
                 <CodexIcon name="file" className="size-4 text-[var(--codex-text-muted)]" />
                 <span className="min-w-0 flex-1 truncate">{file.path}</span>
                 <span className="text-[var(--codex-diff-added)]">+{file.additions}</span>
                 <span className="text-[var(--codex-diff-removed)]">-{file.removals}</span>
               </div>
-              <pre className="m-0 bg-[color-mix(in_oklab,var(--codex-surface-muted)_50%,transparent)] py-2 text-[12px] leading-6">
+              <pre className="m-0 bg-transparent py-2 text-[12px] leading-6">
                 {file.lines.map((line, index) => (
                   <div
                     key={`${line.text}-${index}`}
@@ -131,7 +133,7 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           ))}
         </div>
       </section>
-      <aside className="hidden w-[220px] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block 2xl:w-[248px]">
+      <aside className="hidden w-[24%] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block">
         <div className="mb-3 flex h-9 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_55%,transparent)] px-3 text-[var(--codex-text-faint)]">
           <CodexIcon name="search" className="size-4" />
           <span>Filter files...</span>
