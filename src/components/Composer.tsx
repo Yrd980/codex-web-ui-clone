@@ -20,29 +20,30 @@ export function Composer({ running = false, onToggleRunning, onOpenTools }: Comp
               <CodexIcon name="plus" className="size-[18px]" />
             </button>
             <button
-              className="flex h-8 items-center gap-1.5 rounded-[10px] px-2.5 text-[var(--codex-permission)] hover:bg-[var(--codex-hover)]"
+              className="flex h-8 items-center gap-1.5 rounded-[10px] px-2 text-[var(--codex-permission)] hover:bg-[var(--codex-hover)]"
               type="button"
             >
               <CodexIcon name="warning" className="size-4" />
-              Workspace write
-            </button>
-            <button className="hidden h-8 items-center gap-1.5 rounded-[10px] px-2.5 hover:bg-[var(--codex-hover)] sm:flex" type="button">
-              GPT-5
-              <CodexIcon name="chevronDown" className="size-3.5" />
-            </button>
-            <button className="hidden h-8 items-center gap-1.5 rounded-[10px] px-2.5 hover:bg-[var(--codex-hover)] md:flex" type="button" onClick={onOpenTools}>
-              Tools
+              Full access
               <CodexIcon name="chevronDown" className="size-3.5" />
             </button>
           </div>
-          <button
-            className="grid size-9 place-items-center rounded-full bg-[color-mix(in_oklab,var(--codex-accent)_22%,var(--codex-surface-muted))] text-[var(--codex-text)] shadow-[0_6px_18px_rgb(76_79_105_/_0.12)]"
-            type="button"
-            aria-label={running ? "Stop" : "Send"}
-            onClick={onToggleRunning}
-          >
-            <CodexIcon name={running ? "stop" : "send"} className="size-[18px]" />
-          </button>
+          <div className="flex min-w-0 items-center gap-2">
+            <button className="hidden h-8 items-center gap-1.5 rounded-[10px] px-2.5 text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] sm:flex" type="button" onClick={onOpenTools}>
+              <CodexIcon name="spinner" className="size-4" />
+              5.5
+              <span className="max-sm:hidden">Extra High</span>
+              <CodexIcon name="chevronDown" className="size-3.5" />
+            </button>
+            <button
+              className="grid size-9 place-items-center rounded-full bg-[var(--codex-text)] text-[var(--codex-surface-raised)] shadow-[0_6px_18px_rgb(76_79_105_/_0.12)]"
+              type="button"
+              aria-label={running ? "Stop" : "Send"}
+              onClick={onToggleRunning}
+            >
+              <CodexIcon name={running ? "stop" : "send"} className="size-[18px]" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

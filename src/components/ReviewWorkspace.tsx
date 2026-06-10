@@ -3,7 +3,7 @@ import { CodexIcon } from "./CodexIcon";
 
 export function ReviewWorkspace() {
   return (
-    <div className="flex h-full min-w-0 flex-1 border-l border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface)_78%,transparent)]">
+    <div className="flex h-full min-w-0 flex-1 bg-[color-mix(in_oklab,var(--codex-surface)_78%,transparent)]">
       <section className="flex min-w-0 flex-1 flex-col">
         <div className="flex h-11 items-center gap-1 border-b border-[var(--codex-border-soft)] px-3">
           {["Review", "Terminal", "Browser"].map((tab) => (
@@ -66,8 +66,11 @@ export function ReviewWorkspace() {
           ))}
         </div>
       </section>
-      <aside className="hidden w-[248px] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block">
-        <div className="mb-3 rounded-[9px] bg-[var(--codex-surface-raised)] px-3 py-2 text-[var(--codex-text-faint)]">Search files</div>
+      <aside className="hidden w-[220px] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block 2xl:w-[248px]">
+        <div className="mb-3 flex h-9 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_55%,transparent)] px-3 text-[var(--codex-text-faint)]">
+          <CodexIcon name="search" className="size-4" />
+          <span>Filter files...</span>
+        </div>
         {fileTree.map((item) => (
           <div
             key={item.path}
