@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { AppFrame } from "./components/AppFrame";
 import { ChatWorkspace } from "./components/ChatWorkspace";
+import { CommandPalette } from "./components/CommandPalette";
+import { SettingsView } from "./components/SettingsView";
 import { projectGroups } from "./data/mockData";
 import type { ActiveView } from "./types";
 
@@ -17,7 +19,8 @@ export default function App() {
       onSelectThread={setActiveThreadId}
       onSetView={setActiveView}
     >
-      <ChatWorkspace activeView={activeView} onSetView={setActiveView} />
+      {activeView === "settings" ? <SettingsView /> : <ChatWorkspace activeView={activeView} onSetView={setActiveView} />}
+      <CommandPalette open={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
     </AppFrame>
   );
 }
