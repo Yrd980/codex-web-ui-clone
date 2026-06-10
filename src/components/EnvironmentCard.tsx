@@ -26,7 +26,7 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
   const [pullRequestState, setPullRequestState] = useState("Pull request status unavailable");
 
   return (
-    <aside className="pointer-events-none absolute right-3 top-4 z-10 hidden w-[min(374px,calc(100%-24px))] shrink-0 px-0 py-0 lg:block">
+    <aside className="pointer-events-none absolute right-0 top-4 z-10 hidden w-[min(406px,calc(100%-24px))] shrink-0 px-3 py-0 lg:block">
       <div className="pointer-events-auto rounded-[22px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_78%,transparent)] shadow-[var(--codex-shadow-soft)] backdrop-blur-sm">
         <div className="relative flex h-[54px] items-center justify-between gap-3 px-5">
           <button className="flex items-center gap-1.5 text-[15px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button" onClick={() => setMenuOpen((open) => !open)}>

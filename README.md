@@ -2,6 +2,10 @@
 
 A Vite + React + TypeScript prototype that recreates the Codex desktop app workspace as a web UI. The current version is a static, screenshot-backed clone focused on layout fidelity, responsive tool surfaces, and the main Codex workbench states.
 
+## Preview
+
+![Codex web UI clone workbench](docs/visuals/codex-web-ui-clone-workbench.png)
+
 ## What It Includes
 
 - Codex-style app shell with top menu, sidebar, project groups, and thread list.

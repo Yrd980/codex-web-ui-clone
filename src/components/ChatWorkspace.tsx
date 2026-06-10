@@ -21,6 +21,8 @@ const MAX_TOOL_PANEL_WIDTH = 920;
 const MIN_CHAT_WIDTH = 440;
 const RIGHT_RAIL_MIN_WORKSPACE_WIDTH = 1320;
 const TOOL_SWITCHER_RAIL_WIDTH = 456;
+const ENVIRONMENT_RESERVED_WIDTH = 406;
+const WORKSPACE_GUTTER_WIDTH = 64;
 const terminalSeedLines = [
   "PS C:\\Users\\Yrd98\\project\\aesthetics> bun run build",
   "tsc --noEmit && vite build",
@@ -43,10 +45,12 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
   const [terminalLines, setTerminalLines] = useState(terminalSeedLines);
   const [enabledPlugins, setEnabledPlugins] = useState(["Browser", "GitHub", "OpenAI Developers"]);
   const [enabledAutomations, setEnabledAutomations] = useState(["Build monitor"]);
+  const [environmentOpen, setEnvironmentOpen] = useState(true);
   const running = activeView === "running";
   const hasToolOverlay = ["tool-switcher", "review", "files", "terminal", "browser", "plugins", "automations"].includes(activeView);
   const showRightRail = workspaceWidth >= RIGHT_RAIL_MIN_WORKSPACE_WIDTH;
   const browserUrl = browserHistory[browserIndex] ?? browserHistory[0];
+  const environmentReservedWidth = environmentOpen && !hasToolOverlay ? ENVIRONMENT_RESERVED_WIDTH + WORKSPACE_GUTTER_WIDTH : 0;
 
   const toolPanelStyle = { "--tool-panel-width": `${toolPanelWidth}px` } as CSSProperties;
 
@@ -253,15 +257,26 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
           <button
             className={[
               "grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]",
-              activeView === "tool-switcher" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "",
+              environmentOpen && !hasToolOverlay ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "",
             ].join(" ")}
             type="button"
-            aria-label="Choose tool"
-            onClick={() => onSetView(activeView === "tool-switcher" ? "chat" : "tool-switcher")}
+            aria-label="Toggle environment panel"
+            onClick={() => {
+              if (hasToolOverlay) onSetView("chat");
+              setEnvironmentOpen((open) => !open);
+            }}
           >
             <CodexIcon name="layout" className="size-[19px]" />
           </button>
-          <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={() => onSetView("chat")}>
+          <button
+            className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]"
+            type="button"
+            aria-label="Minimize tool panel"
+            onClick={() => {
+              onSetView("chat");
+              setEnvironmentOpen(false);
+            }}
+          >
             <CodexIcon name="minimize" className="size-[18px]" />
           </button>
           <button
@@ -279,14 +294,22 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
       </header>
       <div ref={workspaceRef} className="relative flex min-h-0 flex-1 overflow-hidden">
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" style={{ marginLeft: environmentReservedWidth ? WORKSPACE_GUTTER_WIDTH : undefined, marginRight: environmentReservedWidth }}>
             <ChatStream messages={chatMessages} running={running} />
           </div>
-          <Composer running={running} onToggleRunning={() => onSetView(running ? "chat" : "running")} onOpenTools={() => onSetView("tool-switcher")} />
+          <Composer
+            running={running}
+            reservedRight={environmentReservedWidth}
+            onToggleRunning={() => onSetView(running ? "chat" : "running")}
+            onOpenTools={() => {
+              setEnvironmentOpen(false);
+              onSetView("tool-switcher");
+            }}
+          />
         </div>
-        {activeView === "tool-switcher" && showRightRail ? (
+        {activeView === "tool-switcher" ? (
           <div
-            className="absolute inset-y-0 right-0 z-20 hidden w-[456px] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] xl:block"
+            className="absolute bottom-[118px] right-5 z-20 h-[min(520px,calc(100%-150px))] w-[min(456px,calc(100%-40px))] overflow-hidden rounded-[18px] border border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[var(--codex-shadow-soft)] xl:inset-y-0 xl:right-0 xl:bottom-auto xl:h-auto xl:w-[456px] xl:rounded-none xl:border-y-0 xl:border-r-0 xl:shadow-none"
             style={{ "--tool-switcher-width": `${TOOL_SWITCHER_RAIL_WIDTH}px` } as CSSProperties}
           >
             <ToolSwitcher onSetView={onSetView} />
@@ -323,7 +346,7 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
             {resizeHandle}
             {adminPanel}
           </div>
-        ) : showRightRail ? (
+        ) : environmentOpen ? (
           <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} />
         ) : null}
       </div>

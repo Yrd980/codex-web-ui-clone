@@ -5,6 +5,7 @@ import { CodexIcon } from "./CodexIcon";
 
 interface ComposerProps {
   running?: boolean;
+  reservedRight?: number;
   onToggleRunning: () => void;
   onOpenTools: () => void;
 }
@@ -13,7 +14,7 @@ const contextOptions = ["Attach file", "Add IDE context", "Open folder", "Use br
 const permissionOptions: PermissionMode[] = ["Read only", "Workspace", "Full access", "Automatic review"];
 const reasoningOptions: ReasoningMode[] = ["Fast", "Medium", "Extra High"];
 
-export function Composer({ running = false, onToggleRunning, onOpenTools }: ComposerProps) {
+export function Composer({ running = false, reservedRight = 0, onToggleRunning, onOpenTools }: ComposerProps) {
   const [permissionMode, setPermissionMode] = useState<PermissionMode>("Full access");
   const [reasoningMode, setReasoningMode] = useState<ReasoningMode>("Extra High");
   const [contextSource, setContextSource] = useState("Use browser page");
@@ -21,8 +22,11 @@ export function Composer({ running = false, onToggleRunning, onOpenTools }: Comp
   const [openMenu, setOpenMenu] = useState<"context" | "permissions" | "model" | "slash" | null>(null);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center bg-gradient-to-t from-[var(--codex-main)] via-[var(--codex-main)] to-transparent px-4 pb-5 pt-16 sm:pb-6">
-      <div className="pointer-events-auto relative w-full max-w-[920px] min-w-0 rounded-[24px] border border-[var(--codex-border)] bg-[var(--codex-surface-raised)] px-4 py-3 shadow-[var(--codex-shadow)]">
+    <div
+      className="pointer-events-none absolute bottom-0 z-20 flex justify-center bg-gradient-to-t from-[var(--codex-main)] via-[var(--codex-main)] to-transparent px-4 pb-5 pt-16 sm:pb-6"
+      style={{ left: reservedRight ? 64 : 0, right: reservedRight }}
+    >
+      <div className="pointer-events-auto relative w-full max-w-[936px] min-w-0 rounded-[24px] border border-[var(--codex-border)] bg-[var(--codex-surface-raised)] px-4 py-3 shadow-[var(--codex-shadow)]">
         <textarea
           className="h-16 w-full resize-none bg-transparent text-[15px] leading-6 text-[var(--codex-text)] outline-none placeholder:text-[var(--codex-text-faint)]"
           placeholder="Ask Codex to build, explain, or review..."
@@ -63,10 +67,6 @@ export function Composer({ running = false, onToggleRunning, onOpenTools }: Comp
               5.5
               <span className="max-sm:hidden">{reasoningMode}</span>
               <CodexIcon name="chevronDown" className="size-3.5" />
-            </button>
-            <button className="hidden h-8 items-center gap-1.5 rounded-[10px] px-2 text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] md:flex" type="button" onClick={onOpenTools}>
-              <CodexIcon name="layout" className="size-4" />
-              Tools
             </button>
             <button
               className="grid size-9 place-items-center rounded-full bg-[var(--codex-text)] text-[var(--codex-surface-raised)] shadow-[0_6px_18px_rgb(76_79_105_/_0.12)]"
@@ -135,12 +135,18 @@ export function Composer({ running = false, onToggleRunning, onOpenTools }: Comp
                     className="flex h-11 w-full items-center gap-3 rounded-[9px] px-2 text-left hover:bg-[var(--codex-hover)]"
                     type="button"
                     onClick={() => {
-                      setComposerText(`${item.command} `);
+                      if (item.command === "/tools") {
+                        onOpenTools();
+                        setComposerText("");
+                      } else {
+                        setComposerText(`${item.command} `);
+                      }
                       setOpenMenu(null);
                     }}
                   >
                     <code className="text-[var(--codex-text)]">{item.command}</code>
                     <span className="truncate">{item.description}</span>
+                    {item.command === "/tools" ? <CodexIcon name="layout" className="ml-auto size-4 text-[var(--codex-text-faint)]" /> : null}
                   </button>
                 ))
               : null}

@@ -192,6 +192,7 @@ export const commandRows: Array<{
 export const slashCommands = [
   { command: "/plan", description: "Toggle plan mode for multi-step work" },
   { command: "/review", description: "Start code review mode" },
+  { command: "/tools", description: "Open the tool switcher" },
   { command: "/status", description: "Show thread ID, context, and rate limits" },
   { command: "/mcp", description: "Open MCP server status" },
   { command: "/goal", description: "Set a persistent goal" },
