@@ -3,6 +3,9 @@ import type { ActiveView } from "../types";
 import { ChatStream } from "./ChatStream";
 import { Composer } from "./Composer";
 import { EnvironmentCard } from "./EnvironmentCard";
+import { FileWorkspace } from "./FileWorkspace";
+import { ReviewWorkspace } from "./ReviewWorkspace";
+import { ToolSwitcher } from "./ToolSwitcher";
 
 interface ChatWorkspaceProps {
   activeView: ActiveView;
@@ -32,7 +35,24 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
           <ChatStream messages={chatMessages} running={running} />
           <Composer running={running} onToggleRunning={() => onSetView(running ? "chat" : "running")} onOpenTools={() => onSetView("tool-switcher")} />
         </div>
-        <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} />
+        {activeView === "tool-switcher" ? (
+          <div className="min-w-0 flex-[0_1_620px] border-l border-[var(--codex-border-soft)]">
+            <ToolSwitcher onSetView={onSetView} />
+          </div>
+        ) : activeView === "review" ? (
+          <ReviewWorkspace />
+        ) : activeView === "files" ? (
+          <FileWorkspace />
+        ) : activeView === "terminal" || activeView === "browser" ? (
+          <div className="flex min-w-0 flex-[0_1_680px] items-center justify-center border-l border-[var(--codex-border-soft)] text-[var(--codex-text-muted)]">
+            <div className="text-center">
+              <div className="text-[15px] font-medium text-[var(--codex-text)]">{activeView === "terminal" ? "Terminal" : "Browser"}</div>
+              <p className="mt-2 max-w-[360px] text-[13px]">This first prototype preserves the workspace shell and reserves this tool surface for the next interaction pass.</p>
+            </div>
+          </div>
+        ) : (
+          <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} />
+        )}
       </div>
     </section>
   );
