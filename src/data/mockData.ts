@@ -1,4 +1,5 @@
 import type {
+  ActiveView,
   ChatMessage,
   DiffFile,
   EnvironmentItem,
@@ -15,8 +16,8 @@ import type {
 export const primaryActions: NavAction[] = [
   { id: "new", label: "New chat", icon: "newChat", view: "chat" },
   { id: "search", label: "Search", icon: "search", opensPalette: true },
-  { id: "plugins", label: "Plugins", icon: "app" },
-  { id: "automations", label: "Automations", icon: "automations" },
+  { id: "plugins", label: "Plugins", icon: "app", view: "plugins" },
+  { id: "automations", label: "Automations", icon: "automations", view: "automations" },
 ];
 
 export const projectGroups: ProjectGroup[] = [
@@ -169,3 +170,32 @@ export const paletteRows: PaletteRow[] = [
   { title: "review diff panel", project: "aesthetics", shortcut: "Ctrl 2" },
   { title: "settings general page", project: "codex-app-notes", shortcut: "Ctrl 3" },
 ];
+
+export const commandRows: Array<{
+  id: string;
+  title: string;
+  description: string;
+  shortcut: string;
+  view: ActiveView;
+}> = [
+  { id: "new-thread", title: "New thread", description: "Start a new local thread", shortcut: "Ctrl N", view: "chat" },
+  { id: "open-folder", title: "Open folder", description: "Choose a project directory", shortcut: "Ctrl O", view: "files" },
+  { id: "toggle-diff", title: "Toggle diff panel", description: "Open the review workspace", shortcut: "Alt B", view: "review" },
+  { id: "toggle-terminal", title: "Toggle terminal", description: "Open the thread terminal", shortcut: "Ctrl J", view: "terminal" },
+  { id: "open-browser", title: "Open browser", description: "Preview the current local app", shortcut: "Ctrl Shift B", view: "browser" },
+  { id: "plugins", title: "Plugins", description: "Inspect enabled plugin bundles", shortcut: "Ctrl Shift P", view: "plugins" },
+  { id: "automations", title: "Automations", description: "Open scheduled monitors and reminders", shortcut: "Ctrl Shift A", view: "automations" },
+  { id: "keyboard", title: "Keyboard shortcuts", description: "Show shortcut reference", shortcut: "Ctrl /", view: "settings" },
+  { id: "settings", title: "Settings", description: "Open app settings", shortcut: "Ctrl ,", view: "settings" },
+];
+
+export const slashCommands = [
+  { command: "/plan", description: "Toggle plan mode for multi-step work" },
+  { command: "/review", description: "Start code review mode" },
+  { command: "/status", description: "Show thread ID, context, and rate limits" },
+  { command: "/mcp", description: "Open MCP server status" },
+  { command: "/goal", description: "Set a persistent goal" },
+  { command: "/feedback", description: "Open feedback dialog" },
+];
+
+export const browserHistory = ["http://127.0.0.1:5173/", "file:///C:/Users/Yrd98/project/aesthetics/dist/index.html", "https://developers.openai.com/codex/app/browser"];

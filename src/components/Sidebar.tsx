@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import { primaryActions } from "../data/mockData";
 import type { ActiveView, ProjectGroup } from "../types";
 import { CodexIcon } from "./CodexIcon";
@@ -15,6 +16,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open, docked, style }: SidebarProps) {
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState(groups[0]?.id ?? "");
+
   return (
     <aside
       style={style}
@@ -49,12 +53,17 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
         <div className="space-y-3.5">
           {groups.map((group) => (
             <section key={group.id}>
-              <div className="mb-0.5 grid h-8 grid-cols-[24px_minmax(0,1fr)] items-center gap-2 px-1.5 text-[15px] text-[var(--codex-text)] lg:text-[14px]">
+              <button
+                className={["mb-0.5 grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[15px] text-[var(--codex-text)] hover:bg-[var(--codex-hover)] lg:text-[14px]", activeProjectId === group.id ? "bg-[var(--codex-active)]" : ""].join(" ")}
+                type="button"
+                title={group.path}
+                onClick={() => setActiveProjectId(group.id)}
+              >
                 <CodexIcon name="folder" className="mx-auto size-[17px] text-[var(--codex-text)]" />
                 <span className="truncate leading-none">{group.name}</span>
-              </div>
+              </button>
               <div className="space-y-0.5">
-                {group.threads.map((thread) => {
+                {(expandedGroups.includes(group.id) ? group.threads : group.threads.slice(0, 3)).map((thread) => {
                   const active = thread.id === activeThreadId;
                   return (
                     <button
@@ -80,9 +89,13 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                   );
                 })}
                 {group.threads.length > 3 ? (
-                  <button className="grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[13px] leading-none text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)]" type="button">
+                  <button
+                    className="grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[13px] leading-none text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)]"
+                    type="button"
+                    onClick={() => setExpandedGroups((ids) => (ids.includes(group.id) ? ids.filter((id) => id !== group.id) : [...ids, group.id]))}
+                  >
                     <span />
-                    <span className="truncate">Show more</span>
+                    <span className="truncate">{expandedGroups.includes(group.id) ? "Show less" : "Show more"}</span>
                   </button>
                 ) : null}
               </div>

@@ -1,5 +1,6 @@
 import type { ChatMessage } from "../types";
 import { CodexIcon } from "./CodexIcon";
+import { useState } from "react";
 
 interface ChatStreamProps {
   messages: ChatMessage[];
@@ -7,6 +8,10 @@ interface ChatStreamProps {
 }
 
 export function ChatStream({ messages, running = false }: ChatStreamProps) {
+  const [previewAction, setPreviewAction] = useState("Website");
+  const [copiedPreview, setCopiedPreview] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
+
   return (
     <div className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-[190px] pt-10 text-[15px] leading-[1.65] sm:px-5">
       <div className="flex justify-end">
@@ -38,19 +43,47 @@ export function ChatStream({ messages, running = false }: ChatStreamProps) {
             </span>
             <div className="min-w-0 flex-1">
               <div className="font-medium text-[var(--codex-text)]">Web preview</div>
-              <div className="mt-0.5 text-[13px] text-[var(--codex-text-faint)]">Website</div>
+              <div className="mt-0.5 text-[13px] text-[var(--codex-text-faint)]">{previewAction}</div>
             </div>
-            <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-[11px] border border-[var(--codex-border-soft)] px-3 text-[13px] text-[var(--codex-text)] hover:bg-[var(--codex-hover)]" type="button">
-              Open in
-              <CodexIcon name="chevronDown" className="size-4" />
-            </button>
+            <div className="relative">
+              <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-[11px] border border-[var(--codex-border-soft)] px-3 text-[13px] text-[var(--codex-text)] hover:bg-[var(--codex-hover)]" type="button" onClick={() => setOpenMenu((open) => !open)}>
+                Open in
+                <CodexIcon name="chevronDown" className="size-4" />
+              </button>
+              {openMenu ? (
+                <div className="absolute right-0 top-10 z-30 w-[150px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
+                  {["Browser", "Files", "External"].map((item) => (
+                    <button
+                      key={item}
+                      className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
+                      type="button"
+                      onClick={() => {
+                        setPreviewAction(item);
+                        setOpenMenu(false);
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3 text-[var(--codex-text-faint)]">
-          <button className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Copy preview link">
-            <CodexIcon name="copy" className="size-4" />
+          <button
+            className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]"
+            type="button"
+            aria-label="Copy preview link"
+            onClick={() => {
+              setCopiedPreview(true);
+              setPreviewAction("Link copied");
+              window.setTimeout(() => setCopiedPreview(false), 1000);
+            }}
+          >
+            <CodexIcon name={copiedPreview ? "check" : "copy"} className="size-4" />
           </button>
-          <button className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Open preview externally">
+          <button className="grid size-6 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Open preview externally" onClick={() => setPreviewAction("External selected")}>
             <CodexIcon name="external" className="size-4" />
           </button>
         </div>

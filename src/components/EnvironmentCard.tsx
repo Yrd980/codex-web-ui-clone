@@ -1,5 +1,6 @@
 import type { EnvironmentItem, ProgressItem, SubagentItem } from "../types";
 import { CodexIcon } from "./CodexIcon";
+import { useState } from "react";
 
 interface EnvironmentCardProps {
   items: EnvironmentItem[];
@@ -17,21 +18,64 @@ const toneClass = {
 };
 
 export function EnvironmentCard({ items, progress, subagents, running = false }: EnvironmentCardProps) {
+  const [environmentMode, setEnvironmentMode] = useState("Local");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [commitState, setCommitState] = useState<"ready" | "committed" | "pushed">("ready");
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pullRequestState, setPullRequestState] = useState("Pull request status unavailable");
+
   return (
     <aside className="pointer-events-none absolute right-3 top-4 z-10 hidden w-[min(374px,calc(100%-24px))] shrink-0 px-0 py-0 lg:block">
       <div className="pointer-events-auto rounded-[22px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_78%,transparent)] shadow-[var(--codex-shadow-soft)] backdrop-blur-sm">
-        <div className="flex h-[54px] items-center justify-between gap-3 px-5">
-          <button className="flex items-center gap-1.5 text-[15px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button">
+        <div className="relative flex h-[54px] items-center justify-between gap-3 px-5">
+          <button className="flex items-center gap-1.5 text-[15px] text-[var(--codex-text-faint)] hover:text-[var(--codex-text-muted)]" type="button" onClick={() => setMenuOpen((open) => !open)}>
             Environment
             <CodexIcon name="chevronDown" className="size-4" />
           </button>
+          {menuOpen ? (
+            <div className="absolute left-4 top-11 z-30 w-[190px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
+              {["Local", "Cloud", "Read only"].map((mode) => (
+                <button
+                  key={mode}
+                  className="flex h-8 w-full items-center justify-between rounded-[8px] px-2 text-left hover:bg-[var(--codex-hover)]"
+                  type="button"
+                  onClick={() => {
+                    setEnvironmentMode(mode);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <span>{mode}</span>
+                  {environmentMode === mode ? <CodexIcon name="check" className="size-4" /> : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <button
             className="grid size-8 shrink-0 place-items-center rounded-[9px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]"
             type="button"
             aria-label="Environment settings"
+            onClick={() => setSettingsOpen((open) => !open)}
           >
             <CodexIcon name="settings" className="size-4" />
           </button>
+          {settingsOpen ? (
+            <div className="absolute right-4 top-11 z-30 w-[210px] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 text-[12px] shadow-[var(--codex-shadow-soft)]">
+              {["Permission profile", "Worktree location", "Reset environment"].map((item) => (
+                <button
+                  key={item}
+                  className="flex h-8 w-full items-center rounded-[8px] px-2 text-left hover:bg-[var(--codex-hover)]"
+                  type="button"
+                  onClick={() => {
+                    setEnvironmentMode(item === "Permission profile" ? "Read only" : environmentMode);
+                    setSettingsOpen(false);
+                  }}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="px-5 pb-4">
           <div className="space-y-4 text-[15px]">
@@ -43,7 +87,7 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
             </div>
             <div className="grid grid-cols-[22px_minmax(0,1fr)_16px] items-center gap-2">
               <CodexIcon name="terminal" className="mx-auto size-[18px] text-[var(--codex-text)]" />
-              <span className="truncate leading-none">Local</span>
+              <span className="truncate leading-none">{environmentMode}</span>
               <CodexIcon name="chevronDown" className="size-4 text-[var(--codex-text-faint)]" />
             </div>
             <div className="grid grid-cols-[22px_minmax(0,1fr)_16px] items-center gap-2">
@@ -51,14 +95,18 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
               <span className="min-w-0 truncate leading-none">codex/codex-web-ui-clone</span>
               <CodexIcon name="chevronDown" className="size-4 text-[var(--codex-text-faint)]" />
             </div>
-            <div className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2">
+            <button className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2 rounded-[9px] text-left hover:bg-[var(--codex-hover)]" type="button" onClick={() => setCommitState(commitState === "ready" ? "committed" : "pushed")}>
               <CodexIcon name="diff" className="mx-auto size-[18px] text-[var(--codex-text)]" />
-              <span className="truncate leading-none">Commit or push</span>
-            </div>
-            <div className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2 text-[var(--codex-text-faint)]">
+              <span className="truncate leading-none">{commitState === "ready" ? "Commit or push" : commitState === "committed" ? "Commit ready to push" : "Pushed to origin"}</span>
+            </button>
+            <button
+              className="grid grid-cols-[22px_minmax(0,1fr)] items-center gap-2 rounded-[9px] text-left text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)]"
+              type="button"
+              onClick={() => setPullRequestState((state) => (state === "Pull request status unavailable" ? "Ready to create pull request" : "Pull request status unavailable"))}
+            >
               <CodexIcon name="cloud" className="mx-auto size-[18px]" />
-              <span className="truncate leading-none">Pull request status unavailable</span>
-            </div>
+              <span className="truncate leading-none">{pullRequestState}</span>
+            </button>
           </div>
         </div>
         <div className="mx-5 border-t border-[var(--codex-border-soft)] py-4">
@@ -104,9 +152,21 @@ export function EnvironmentCard({ items, progress, subagents, running = false }:
         ) : null}
         <div className="mx-5 border-t border-[var(--codex-border-soft)] py-4">
           <div className="mb-4 text-[15px] text-[var(--codex-text-faint)]">Sources</div>
-          <div className="text-[15px] text-[var(--codex-text-faint)]">
-            {items.length ? "No sources yet" : "No sources yet"}
-          </div>
+          <button className="flex w-full items-center justify-between text-left text-[15px] text-[var(--codex-text-faint)]" type="button" onClick={() => setSourcesOpen((open) => !open)}>
+            <span>{sourcesOpen ? `${items.length} local sources` : "No sources yet"}</span>
+            <CodexIcon name="chevronDown" className={["size-4", sourcesOpen ? "rotate-180" : ""].join(" ")} />
+          </button>
+          {sourcesOpen ? (
+            <div className="mt-3 space-y-2 text-[12px] text-[var(--codex-text-muted)]">
+              {items.map((item) => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <CodexIcon name={item.icon} className="size-4" />
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  <span className="truncate text-[var(--codex-text-faint)]">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </aside>

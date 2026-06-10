@@ -15,8 +15,8 @@ const tools: Array<{ label: string; view: ActiveView; icon: IconName; shortcut: 
 
 export function ToolSwitcher({ onSetView }: ToolSwitcherProps) {
   return (
-    <div className="flex h-full items-center justify-center px-6">
-      <div className="w-full max-w-[600px] space-y-1.5">
+    <div className="flex h-full items-center pl-9 pr-8">
+      <div className="w-full space-y-1.5">
         {tools.map((tool, index) => (
           <button
             key={tool.label}

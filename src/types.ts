@@ -3,10 +3,22 @@ export type ActiveView =
   | "tool-switcher"
   | "review"
   | "files"
+  | "plugins"
+  | "automations"
   | "settings"
   | "terminal"
   | "browser"
   | "running";
+
+export type PaletteMode = "commands" | "threads";
+
+export type SettingsSection = "General" | "Keyboard Shortcuts" | "Browser Use" | "Computer Use" | "Connections" | "Model";
+
+export type ReviewScope = "Last turn" | "Uncommitted" | "All branch changes";
+
+export type PermissionMode = "Read only" | "Workspace" | "Full access" | "Automatic review";
+
+export type ReasoningMode = "Fast" | "Medium" | "Extra High";
 
 export type IconName =
   | "app"

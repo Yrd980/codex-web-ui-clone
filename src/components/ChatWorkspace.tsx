@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
-import { chatMessages, environmentItems, progressItems, subagents } from "../data/mockData";
+import { browserHistory, chatMessages, environmentItems, progressItems, subagents } from "../data/mockData";
 import type { ActiveView } from "../types";
 import { ChatStream } from "./ChatStream";
 import { Composer } from "./Composer";
@@ -12,24 +12,41 @@ import { ToolSwitcher } from "./ToolSwitcher";
 
 interface ChatWorkspaceProps {
   activeView: ActiveView;
+  onOpenCommandMenu: () => void;
   onSetView: (view: ActiveView) => void;
 }
 
 const MIN_TOOL_PANEL_WIDTH = 420;
 const MAX_TOOL_PANEL_WIDTH = 920;
 const MIN_CHAT_WIDTH = 440;
+const RIGHT_RAIL_MIN_WORKSPACE_WIDTH = 1320;
+const TOOL_SWITCHER_RAIL_WIDTH = 456;
+const terminalSeedLines = [
+  "PS C:\\Users\\Yrd98\\project\\aesthetics> bun run build",
+  "tsc --noEmit && vite build",
+  "vite build completed successfully",
+];
 
 function clampToolPanelWidth(width: number, containerWidth: number) {
   const maxWidth = Math.max(MIN_TOOL_PANEL_WIDTH, Math.min(MAX_TOOL_PANEL_WIDTH, containerWidth - MIN_CHAT_WIDTH));
   return Math.min(Math.max(width, MIN_TOOL_PANEL_WIDTH), maxWidth);
 }
 
-export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
+export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: ChatWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const resizingRef = useRef(false);
   const [toolPanelWidth, setToolPanelWidth] = useState(680);
+  const [workspaceWidth, setWorkspaceWidth] = useState(0);
+  const [browserIndex, setBrowserIndex] = useState(0);
+  const [browserUseEnabled, setBrowserUseEnabled] = useState(true);
+  const [annotationMode, setAnnotationMode] = useState(false);
+  const [terminalLines, setTerminalLines] = useState(terminalSeedLines);
+  const [enabledPlugins, setEnabledPlugins] = useState(["Browser", "GitHub", "OpenAI Developers"]);
+  const [enabledAutomations, setEnabledAutomations] = useState(["Build monitor"]);
   const running = activeView === "running";
-  const hasToolOverlay = ["tool-switcher", "review", "files", "terminal", "browser"].includes(activeView);
+  const hasToolOverlay = ["tool-switcher", "review", "files", "terminal", "browser", "plugins", "automations"].includes(activeView);
+  const showRightRail = workspaceWidth >= RIGHT_RAIL_MIN_WORKSPACE_WIDTH;
+  const browserUrl = browserHistory[browserIndex] ?? browserHistory[0];
 
   const toolPanelStyle = { "--tool-panel-width": `${toolPanelWidth}px` } as CSSProperties;
 
@@ -68,15 +85,21 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
   }, []);
 
   useEffect(() => {
-    const handleWindowResize = () => {
+    const updateWorkspaceSize = () => {
       const width = workspaceRef.current?.getBoundingClientRect().width;
       if (!width) return;
+      setWorkspaceWidth(width);
       setToolPanelWidth((current) => clampToolPanelWidth(current, width));
     };
 
-    handleWindowResize();
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
+    updateWorkspaceSize();
+    const observer = new ResizeObserver(updateWorkspaceSize);
+    if (workspaceRef.current) observer.observe(workspaceRef.current);
+    window.addEventListener("resize", updateWorkspaceSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateWorkspaceSize);
+    };
   }, []);
 
   const resizeHandle = (
@@ -89,6 +112,120 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
     />
   );
 
+  const toolPlaceholder =
+    activeView === "browser" ? (
+      <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)]">
+        <div className="flex h-11 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-muted)]">
+          <button
+            className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)] disabled:text-[var(--codex-text-faint)]"
+            type="button"
+            aria-label="Back in browser"
+            disabled={browserIndex === 0}
+            onClick={() => setBrowserIndex((index) => Math.max(0, index - 1))}
+          >
+            <CodexIcon name="back" className="size-4" />
+          </button>
+          <button
+            className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)] disabled:text-[var(--codex-text-faint)]"
+            type="button"
+            aria-label="Forward in browser"
+            disabled={browserIndex === browserHistory.length - 1}
+            onClick={() => setBrowserIndex((index) => Math.min(browserHistory.length - 1, index + 1))}
+          >
+            <CodexIcon name="forward" className="size-4" />
+          </button>
+          <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3">
+            <CodexIcon name="globe" className="size-4" />
+            <span className="truncate">{browserUrl}</span>
+          </div>
+          <button
+            className={["h-8 rounded-[9px] px-3", annotationMode ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "bg-[var(--codex-surface-muted)]"].join(" ")}
+            type="button"
+            onClick={() => setAnnotationMode((enabled) => !enabled)}
+          >
+            Annotate
+          </button>
+          <button
+            className={["h-8 rounded-[9px] px-3", browserUseEnabled ? "bg-[var(--codex-surface-muted)] text-[var(--codex-text)]" : "bg-transparent text-[var(--codex-text-faint)]"].join(" ")}
+            type="button"
+            onClick={() => setBrowserUseEnabled((enabled) => !enabled)}
+          >
+            {browserUseEnabled ? "Browser use on" : "Browser use off"}
+          </button>
+        </div>
+        <div className="grid min-h-0 flex-1 place-items-center text-center text-[13px] text-[var(--codex-text-muted)]">
+          <div className="relative w-[min(420px,calc(100%-40px))] rounded-[14px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-6 py-8 shadow-[0_10px_34px_rgb(76_79_105_/_0.08)]">
+            <CodexIcon name="browser" className="mx-auto mb-3 size-8 text-[var(--codex-text-faint)]" />
+            <div className="text-[15px] font-medium text-[var(--codex-text)]">In-app browser preview</div>
+            <p className="mt-2">Previewing {browserUrl.replace(/^https?:\/\//, "")}</p>
+            {annotationMode ? (
+              <div className="absolute right-5 top-5 rounded-[10px] border border-[var(--codex-accent)] bg-[color-mix(in_oklab,var(--codex-accent)_10%,white)] px-3 py-2 text-left text-[12px] text-[var(--codex-accent)]">
+                Comment pinned
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)]">
+        <div className="flex h-11 items-center justify-between border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-muted)]">
+          <span>Terminal</span>
+          <button className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3" type="button" onClick={() => setTerminalLines([])}>
+            Clear
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto p-4 text-[12px] leading-6">
+          {terminalLines.length ? (
+            terminalLines.map((line) => (
+              <div key={line}>
+                <code>{line}</code>
+              </div>
+            ))
+          ) : (
+            <span className="text-[var(--codex-text-faint)]">Terminal cleared</span>
+          )}
+        </div>
+      </div>
+    );
+
+  const adminPanel =
+    activeView === "plugins" || activeView === "automations" ? (
+      <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)] text-[12px] text-[var(--codex-text-muted)]">
+        <div className="flex h-11 items-center justify-between border-b border-[var(--codex-border-soft)] px-3">
+          <span className="text-[var(--codex-text)]">{activeView === "plugins" ? "Plugins" : "Automations"}</span>
+          <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Panel settings">
+            <CodexIcon name="settings" className="size-4" />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto p-3">
+          {(activeView === "plugins" ? ["Browser", "GitHub", "OpenAI Developers", "Slack", "Computer Use"] : ["Build monitor", "Thread follow-up", "Browser regression check"]).map((item) => {
+            const active = activeView === "plugins" ? enabledPlugins.includes(item) : enabledAutomations.includes(item);
+            return (
+              <button
+                key={item}
+                className="mb-2 flex min-h-11 w-full items-center gap-3 rounded-[10px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 text-left hover:bg-[var(--codex-hover)]"
+                type="button"
+                onClick={() => {
+                  if (activeView === "plugins") {
+                    setEnabledPlugins((plugins) => (plugins.includes(item) ? plugins.filter((plugin) => plugin !== item) : [...plugins, item]));
+                  } else {
+                    setEnabledAutomations((automations) => (automations.includes(item) ? automations.filter((automation) => automation !== item) : [...automations, item]));
+                  }
+                }}
+              >
+                <CodexIcon name={activeView === "plugins" ? "app" : "automations"} className="size-4 text-[var(--codex-text)]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] text-[var(--codex-text)]">{item}</span>
+                  <span className="block truncate text-[11px] text-[var(--codex-text-faint)]">{active ? "Enabled in this shell" : "Optional"}</span>
+                </span>
+                {active ? <CodexIcon name="check" className="size-4 text-[var(--codex-accent)]" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <section className="relative flex h-full min-h-0 flex-col overflow-hidden">
       <header className="flex h-[58px] shrink-0 items-center justify-between border-b border-[var(--codex-border-soft)] px-4">
@@ -99,7 +236,7 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
           <div className="min-w-0">
             <div className="truncate text-[14px] font-medium">页面的设计</div>
           </div>
-          <button className="grid size-7 place-items-center rounded-[8px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]" type="button" aria-label="Thread options">
+          <button className="grid size-7 place-items-center rounded-[8px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]" type="button" aria-label="Thread options" onClick={onOpenCommandMenu}>
             <CodexIcon name="more" className="size-[16px]" />
           </button>
         </div>
@@ -124,7 +261,7 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
           >
             <CodexIcon name="layout" className="size-[19px]" />
           </button>
-          <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel">
+          <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={() => onSetView("chat")}>
             <CodexIcon name="minimize" className="size-[18px]" />
           </button>
           <button
@@ -147,12 +284,11 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
           </div>
           <Composer running={running} onToggleRunning={() => onSetView(running ? "chat" : "running")} onOpenTools={() => onSetView("tool-switcher")} />
         </div>
-        {activeView === "tool-switcher" ? (
+        {activeView === "tool-switcher" && showRightRail ? (
           <div
-            className="absolute bottom-[118px] right-5 z-20 h-[min(520px,calc(100%-150px))] w-[min(var(--tool-panel-width),calc(100%-40px))] overflow-hidden rounded-[18px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-main)_94%,transparent)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:h-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:rounded-none xl:border-y-0 xl:border-r-0 xl:shadow-none"
-            style={toolPanelStyle}
+            className="absolute inset-y-0 right-0 z-20 hidden w-[456px] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] xl:block"
+            style={{ "--tool-switcher-width": `${TOOL_SWITCHER_RAIL_WIDTH}px` } as CSSProperties}
           >
-            {resizeHandle}
             <ToolSwitcher onSetView={onSetView} />
           </div>
         ) : activeView === "review" ? (
@@ -161,7 +297,7 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
             style={toolPanelStyle}
           >
             {resizeHandle}
-            <ReviewWorkspace />
+            <ReviewWorkspace onSetView={onSetView} />
           </div>
         ) : activeView === "files" ? (
           <div
@@ -177,14 +313,19 @@ export function ChatWorkspace({ activeView, onSetView }: ChatWorkspaceProps) {
             style={toolPanelStyle}
           >
             {resizeHandle}
-            <div className="text-center">
-              <div className="text-[15px] font-medium text-[var(--codex-text)]">{activeView === "terminal" ? "Terminal" : "Browser"}</div>
-              <p className="mt-2 max-w-[360px] text-[13px]">This first prototype preserves the workspace shell and reserves this tool surface for the next interaction pass.</p>
-            </div>
+            {toolPlaceholder}
           </div>
-        ) : (
+        ) : activeView === "plugins" || activeView === "automations" ? (
+          <div
+            className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%-28px))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+            style={toolPanelStyle}
+          >
+            {resizeHandle}
+            {adminPanel}
+          </div>
+        ) : showRightRail ? (
           <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} />
-        )}
+        ) : null}
       </div>
     </section>
   );
