@@ -1,7 +1,7 @@
 # Codex App UI/UX Web Clone Spec
 
 Date: 2026-06-10
-Status: Screenshot-backed draft, calibrated against local Codex configuration
+Status: Approved design for first runnable prototype
 Target: Web implementation that visually and behaviorally recreates the Codex App workspace
 
 ## 1. Source Of Truth
@@ -32,6 +32,34 @@ Local configuration is also a source of truth for this user's Codex instance:
 - Dark chrome theme exists but is not the active target: `surface = "#1e1e2e"`, `ink = "#cdd6f4"`, `accent = "#cba6f7"`, `contrast = 60`
 
 The first Web clone should default to the active local light theme. Screenshot sampling is used only to calibrate derived surfaces, borders, hover fills, shadows, and overlay dimming.
+
+## 1.1 Confirmed Prototype Direction
+
+The first implementation should be a runnable static-data prototype, not another design-only artifact.
+
+Confirmed stack:
+
+- Vite.
+- React.
+- TypeScript.
+- Tailwind CSS v4.
+- Tailwind's Vite plugin: `tailwindcss` plus `@tailwindcss/vite`.
+- No component library in the first pass.
+- No shadcn/ui, Radix Themes, dashboard kit, or marketing template.
+
+Styling model:
+
+- Use Tailwind utilities for layout, spacing, responsive behavior, state styling, and common component structure.
+- Keep Codex theme values in editable CSS variables under `src/styles/tokens.css`.
+- Use Tailwind arbitrary values where the clone needs screenshot-like dimensions, such as `w-[298px]`, `rounded-[24px]`, or custom shadows.
+- Keep a small amount of plain CSS for global tokens, container behavior, text rendering, and browser reset only.
+
+Prototype constraints:
+
+- Static data is acceptable and preferred for the first pass.
+- Interactions should switch visible states and panels, but do not need persistence or real Codex backend behavior.
+- Visual fidelity matters more than abstract component reuse.
+- The page should open directly into the app workbench, not a landing page.
 
 ## 2. Design Read
 
@@ -602,6 +630,63 @@ First pass should implement these screens:
 
 Use static data first. The goal is visual and interaction fidelity.
 
+### 9.1 App State Model
+
+The prototype should use a single-page React state model.
+
+Core state:
+
+- `activeView`: `chat`, `tool-switcher`, `review`, `files`, `settings`, `terminal`, `browser`, or `running`.
+- `activeThreadId`: selected thread row in the sidebar.
+- `activeFileTab`: selected file tab in the file viewer.
+- `isCommandPaletteOpen`: whether the search overlay is visible.
+- `isEnvironmentOpen`: whether the environment panel or mobile drawer is visible.
+
+The first pass does not need URL routing. Buttons should visibly change the workspace state so the prototype can be reviewed in the browser.
+
+### 9.2 Component Structure
+
+Use a small, explicit component tree:
+
+- `App`: owns top-level static data and workspace state.
+- `AppFrame`: renders the native-like top row, sidebar, main shell, overlays, and responsive shell layout.
+- `TopMenu`: simulates the Windows Codex menu row and window controls.
+- `Sidebar`: renders primary actions, project groups, thread rows, and settings entry.
+- `ChatWorkspace`: composes the chat header, chat stream, composer, environment card, and optional tool workspace.
+- `ChatStream`: prose-first conversation content and inline tool/result rows.
+- `Composer`: floating input surface with internal controls and send/stop state.
+- `EnvironmentCard`: floating environment, changes, progress, subagents, and sources panel.
+- `ToolSwitcher`: contextual right-workspace command list.
+- `ReviewWorkspace`: tool tabs, compact toolbar, diff surface, and file tree drawer.
+- `FileWorkspace`: tool tabs, breadcrumb, document viewer, code blocks, and file tree drawer.
+- `SettingsView`: settings navigation and centered settings list panels.
+- `CommandPalette`: dimmed overlay with integrated search and recent chat rows.
+- `CodexIcon`: local icon registry with a single visual style.
+
+Keep components direct and domain-named. Do not create a generic dashboard-card system.
+
+### 9.3 Tailwind Usage Rules
+
+Tailwind is the primary styling tool for the prototype, but it should not erase the Codex-specific visual language.
+
+- Prefer token-backed arbitrary colors such as `bg-[var(--codex-sidebar)]` and `text-[var(--codex-text)]`.
+- Use fixed screenshot-calibrated dimensions where the app shell depends on them.
+- Use responsive prefixes and container queries to preserve the hierarchy at desktop, tablet, and mobile widths.
+- Keep purple accent usage limited to active switches, skill/state indicators, and send/stop affordances.
+- Avoid default Tailwind palette drift such as random blue, slate, zinc, or violet utilities outside the token layer.
+- Avoid generic `shadow-lg`, `rounded-3xl`, and card defaults when a calibrated custom value is needed.
+
+### 9.4 First-Pass Verification
+
+Before considering the prototype complete:
+
+- Install dependencies with `bun`, unless it is unavailable on the machine.
+- Run the project build.
+- Start the local dev server.
+- Open the app in the browser.
+- Verify the seven target states: main chat, tool switcher, review, file viewer, settings, command palette, and running progress.
+- Check that the first viewport is the usable app workbench, not explanatory copy.
+
 Minimum interactions:
 
 - Select project/thread in sidebar.
@@ -639,10 +724,14 @@ The clone passes the first visual review when:
 - Review and file workspaces preserve the left chat context.
 - Settings and command palette match the real app's calm, low-contrast treatment.
 
-## 11. Open Decisions
+## 11. Implementation Calibration Notes
 
-1. UI copy language: screenshots are mixed Chinese/English. The first Web clone should probably use Chinese where the active conversation is Chinese and English for app/system labels, matching the screenshots.
-2. Window chrome: because this is Web, native Windows controls can be simulated only if the app runs full-screen or inside a custom shell. For normal browser delivery, keep an internal app frame that visually suggests the Codex desktop shell.
-3. Icon source: exact Codex glyphs can be approximated from local bundle modules for private study, but the implementation should avoid pretending they are a public icon package. Keep the registry internal to this clone.
-4. Exact measurements: use screenshot-based visual matching during implementation rather than relying only on this document's approximate pixel values.
-5. Theme configurability: because Codex exposes appearance settings for accent, background, foreground, UI font, and code font, the Web clone should not hard-code a single look. It should ship with this user's local light theme as the default preset and keep tokens editable.
+1. Exact measurements should be calibrated in browser against the reference screenshots during implementation rather than relying only on this document's approximate pixel values.
+2. Theme configurability should remain token-driven. The first prototype ships with this user's local light theme as the default preset and keeps colors/fonts editable through CSS variables.
+
+## 12. Closed Decisions
+
+1. UI copy language: use Chinese where the active conversation or user-facing sample content is Chinese, and English for app/system labels where that matches the screenshots.
+2. Window chrome: keep an internal app frame that visually suggests the Codex desktop shell, because native Windows controls cannot be truly recreated in a normal browser tab.
+3. Icon source: use an internal `CodexIcon` registry for the clone. Do not present approximated glyphs as a public Codex icon package.
+4. Implementation stack: use Vite, React, TypeScript, and Tailwind CSS v4 with `@tailwindcss/vite`.
