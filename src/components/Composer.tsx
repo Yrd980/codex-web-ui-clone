@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { slashCommands } from "../data/mockData";
+import { slashCommands } from "../data/scenarios/commandScenario";
 import type { PermissionMode, ReasoningMode } from "../types";
 import { CodexIcon } from "./CodexIcon";
 

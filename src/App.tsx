@@ -1,54 +1,40 @@
 import { useEffect, useState } from "react";
+import { appActionFromShortcut, reduceAppAction } from "./actions/appActions";
 import { AppFrame } from "./components/AppFrame";
 import { ChatWorkspace } from "./components/ChatWorkspace";
 import { CommandPalette } from "./components/CommandPalette";
 import { SettingsView } from "./components/SettingsView";
-import { projectGroups } from "./data/mockData";
+import { projectGroups } from "./data/scenarios/threadScenario";
 import type { ActiveView, PaletteMode, SettingsSection } from "./types";
 
 export default function App() {
-  const [activeView, setActiveView] = useState<ActiveView>("chat");
+  const [appState, setAppState] = useState({
+    activeView: "chat" as ActiveView,
+    isCommandPaletteOpen: false,
+    paletteMode: "threads" as PaletteMode,
+    settingsSection: "General" as SettingsSection,
+  });
   const [activeThreadId, setActiveThreadId] = useState("thread-1");
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [paletteMode, setPaletteMode] = useState<PaletteMode>("threads");
-  const [settingsSection, setSettingsSection] = useState<SettingsSection>("General");
 
   const openPalette = (mode: PaletteMode) => {
-    setPaletteMode(mode);
-    setIsCommandPaletteOpen(true);
+    setAppState((state) => reduceAppAction(state, { type: "open-palette", mode }));
   };
 
-  const openSettings = (section: SettingsSection) => {
-    setSettingsSection(section);
-    setActiveView("settings");
+  const setActiveView = (view: ActiveView) => {
+    setAppState((state) => reduceAppAction(state, { type: "set-view", view }));
+  };
+
+  const setSettingsSection = (section: SettingsSection) => {
+    setAppState((state) => reduceAppAction(state, { type: "set-settings-section", section }));
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        openPalette("commands");
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "g") {
-        event.preventDefault();
-        openPalette("threads");
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key === ",") {
-        event.preventDefault();
-        openSettings("General");
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key === "/") {
-        event.preventDefault();
-        openSettings("Keyboard Shortcuts");
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "j") {
-        event.preventDefault();
-        setActiveView((view) => (view === "terminal" ? "chat" : "terminal"));
-      }
-      if (event.key === "Escape") {
-        setIsCommandPaletteOpen(false);
-        setActiveView((view) => (view === "settings" ? view : "chat"));
-      }
+      const action = appActionFromShortcut(event);
+      if (!action) return;
+
+      event.preventDefault();
+      setAppState((state) => reduceAppAction(state, action));
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -63,17 +49,16 @@ export default function App() {
       onSelectThread={setActiveThreadId}
       onSetView={setActiveView}
     >
-      {activeView === "settings" ? (
-        <SettingsView activeSection={settingsSection} onSetSection={setSettingsSection} />
+      {appState.activeView === "settings" ? (
+        <SettingsView activeSection={appState.settingsSection} onSetSection={setSettingsSection} />
       ) : (
-        <ChatWorkspace activeView={activeView} onOpenCommandMenu={() => openPalette("commands")} onSetView={setActiveView} />
+        <ChatWorkspace activeView={appState.activeView} onOpenCommandMenu={() => openPalette("commands")} onSetView={setActiveView} />
       )}
       <CommandPalette
-        open={isCommandPaletteOpen}
-        mode={paletteMode}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        onOpenSettings={openSettings}
-        onSetView={setActiveView}
+        open={appState.isCommandPaletteOpen}
+        mode={appState.paletteMode}
+        onClose={() => setAppState((state) => reduceAppAction(state, { type: "close-palette" }))}
+        onRunCommand={(row) => setAppState((state) => reduceAppAction(state, { type: "run-command", commandId: row.id, view: row.view }))}
       />
     </AppFrame>
   );

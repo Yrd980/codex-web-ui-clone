@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sectionDescriptions, settingsSections, shortcutRows } from "../data/scenarios/settingsScenario";
 import type { SettingsSection } from "../types";
 import { CodexIcon } from "./CodexIcon";
 
@@ -6,26 +7,6 @@ interface SettingsViewProps {
   activeSection: SettingsSection;
   onSetSection: (section: SettingsSection) => void;
 }
-
-const sections: SettingsSection[] = ["General", "Keyboard Shortcuts", "Browser Use", "Computer Use", "Connections", "Model"];
-
-const shortcutRows = [
-  ["Command menu", "Ctrl K"],
-  ["Search threads", "Ctrl G"],
-  ["Find in thread", "Ctrl F"],
-  ["Toggle sidebar", "Ctrl B"],
-  ["Toggle terminal", "Ctrl J"],
-  ["Keyboard shortcuts", "Ctrl /"],
-];
-
-const sectionDescriptions: Record<SettingsSection, string> = {
-  General: "General preferences for this local Codex workspace.",
-  "Keyboard Shortcuts": "Find, inspect, and reset app commands.",
-  "Browser Use": "Manage browser preview, annotations, and site permissions.",
-  "Computer Use": "Configure desktop app control permissions.",
-  Connections: "Manage GitHub, remote environments, and MCP-style connections.",
-  Model: "Choose the active model and reasoning profile.",
-};
 
 export function SettingsView({ activeSection, onSetSection }: SettingsViewProps) {
   const [enabledRows, setEnabledRows] = useState(["Animations", "Browser Use", "GitHub", "OpenAI Developers", "Computer Use"]);
@@ -70,7 +51,7 @@ export function SettingsView({ activeSection, onSetSection }: SettingsViewProps)
   return (
     <section className="flex h-full min-h-0 bg-[var(--codex-main)]">
       <aside className="hidden w-[18%] shrink-0 border-r border-[var(--codex-border-soft)] px-3 py-5 text-[13px] text-[var(--codex-text-muted)] md:block">
-        {sections.map((item) => (
+        {settingsSections.map((item) => (
           <button
             key={item}
             className={["mb-1 flex h-9 w-full items-center rounded-[10px] px-3 text-left", item === activeSection ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]"].join(" ")}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { diffFiles, fileTree } from "../data/mockData";
+import { diffFiles, fileTree } from "../data/scenarios/toolScenario";
 import type { ActiveView, ReviewScope } from "../types";
 import { CodexIcon } from "./CodexIcon";
 

@@ -1,7 +1,7 @@
 import type { CSSProperties, FocusEvent as ReactFocusEvent, MouseEvent as ReactMouseEvent } from "react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { primaryActions } from "../data/mockData";
+import { primaryActions } from "../data/scenarios/commandScenario";
 import type { ActiveView, ProjectGroup } from "../types";
 import { CodexIcon } from "./CodexIcon";
 

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
+import { clampSidebarWidth, codexShellGeometryDefaults, getCollapseSidebarWidth, getSidebarFrame, getViewportWidth } from "../layout/codexShellGeometry";
 import type { ActiveView, ProjectGroup } from "../types";
 import { Sidebar } from "./Sidebar";
 import { TopMenu } from "./TopMenu";
@@ -14,47 +15,14 @@ interface AppFrameProps {
   children: ReactNode;
 }
 
-const SIDEBAR_MIN_RATIO = 0.13;
-const SIDEBAR_MAX_RATIO = 0.2;
-const SIDEBAR_DEFAULT_RATIO = 0.18;
-const SIDEBAR_COLLAPSE_RATIO = 0.075;
-const SIDEBAR_FLOATING_EDGE_RATIO = 0.031;
-
-function getViewportWidth() {
-  return typeof window === "undefined" ? 1440 : window.innerWidth;
-}
-
-function getSidebarBounds(containerWidth = getViewportWidth()) {
-  const min = Math.round(containerWidth * SIDEBAR_MIN_RATIO);
-  const max = Math.max(min, Math.round(containerWidth * SIDEBAR_MAX_RATIO));
-  return { min, max };
-}
-
-function clampSidebarWidth(width: number, containerWidth = getViewportWidth()) {
-  const { min, max } = getSidebarBounds(containerWidth);
-  return Math.min(Math.max(width, min), max);
-}
-
-function getDefaultSidebarWidth() {
-  return clampSidebarWidth(Math.round(getViewportWidth() * SIDEBAR_DEFAULT_RATIO));
-}
-
-function getCollapseSidebarWidth() {
-  return Math.round(getViewportWidth() * SIDEBAR_COLLAPSE_RATIO);
-}
-
 export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, children }: AppFrameProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarDocked, setSidebarDocked] = useState(true);
-  const [sidebarRatio, setSidebarRatio] = useState(SIDEBAR_DEFAULT_RATIO);
+  const [sidebarRatio, setSidebarRatio] = useState(codexShellGeometryDefaults.sidebarRatio);
   const [viewportWidth, setViewportWidth] = useState(() => getViewportWidth());
   const resizingSidebarRef = useRef(false);
 
-  const sidebarWidth = sidebarDocked ? clampSidebarWidth(Math.round(viewportWidth * sidebarRatio), viewportWidth) : getDefaultSidebarWidth();
-  const sidebarStyle = {
-    "--sidebar-width": `${sidebarWidth}px`,
-    "--sidebar-floating-edge": `${Math.round(viewportWidth * SIDEBAR_FLOATING_EDGE_RATIO)}px`,
-  } as CSSProperties;
+  const sidebarFrame = getSidebarFrame({ docked: sidebarDocked, ratio: sidebarRatio, viewportWidth });
   const sidebarFloating = !sidebarDocked || sidebarOpen;
 
   const handleSetView = (view: ActiveView) => {
@@ -89,7 +57,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
     document.body.style.userSelect = "none";
 
     const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
-      if (moveEvent.clientX < getCollapseSidebarWidth()) {
+      if (moveEvent.clientX < getCollapseSidebarWidth(window.innerWidth)) {
         setSidebarDocked(false);
         setSidebarOpen(true);
         return;
@@ -146,12 +114,12 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
           onSetView={handleSetView}
           open={sidebarOpen}
           docked={sidebarDocked}
-          style={sidebarStyle}
+          style={sidebarFrame.style}
         />
         {sidebarDocked ? (
           <button
             className="absolute inset-y-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent outline-none lg:block"
-            style={{ left: `${sidebarWidth}px` }}
+            style={{ left: `${sidebarFrame.width}px` }}
             type="button"
             aria-label="Resize sidebar"
             onPointerDown={startSidebarResize}

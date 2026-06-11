@@ -1,29 +1,21 @@
-import { commandRows, paletteRows } from "../data/mockData";
-import type { ActiveView, PaletteMode, SettingsSection } from "../types";
+import { commandRows, paletteRows } from "../data/scenarios/commandScenario";
+import type { PaletteMode } from "../types";
 import { CodexIcon } from "./CodexIcon";
 
 interface CommandPaletteProps {
   open: boolean;
   mode: PaletteMode;
   onClose: () => void;
-  onOpenSettings: (section: SettingsSection) => void;
-  onSetView: (view: ActiveView) => void;
+  onRunCommand: (row: (typeof commandRows)[number]) => void;
 }
 
-export function CommandPalette({ open, mode, onClose, onOpenSettings, onSetView }: CommandPaletteProps) {
+export function CommandPalette({ open, mode, onClose, onRunCommand }: CommandPaletteProps) {
   if (!open) return null;
 
   const commandMode = mode === "commands";
 
   const runCommand = (row: (typeof commandRows)[number]) => {
-    if (row.id === "keyboard") {
-      onOpenSettings("Keyboard Shortcuts");
-    } else if (row.id === "settings") {
-      onOpenSettings("General");
-    } else {
-      onSetView(row.view);
-    }
-    onClose();
+    onRunCommand(row);
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fileTabs, fileTree } from "../data/mockData";
+import { fileTabs, fileTree } from "../data/scenarios/toolScenario";
 import { CodexIcon } from "./CodexIcon";
 
 export function FileWorkspace() {
