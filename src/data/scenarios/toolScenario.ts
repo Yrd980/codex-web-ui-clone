@@ -45,12 +45,32 @@ export const fileTabs: FileTab[] = [
 ];
 
 export const fileTree: FileTreeItem[] = [
+  { path: "dist", depth: 0 },
   { path: "docs", depth: 0 },
+  { path: "architecture", depth: 1 },
   { path: "superpowers", depth: 1 },
+  { path: "plans", depth: 2 },
+  { path: "2026-06-10-codex-web-ui-ux-clone-implementation.md", depth: 3, status: "modified" },
   { path: "specs", depth: 2 },
   { path: "2026-06-10-codex-web-ui-ux-clone-design.md", depth: 3, active: true, status: "modified" },
   { path: "references", depth: 1 },
   { path: "codex-app-screenshots", depth: 2 },
+  { path: "visuals", depth: 2 },
+  { path: "codex-web-ui-main.png", depth: 3 },
+  { path: "codex-web-ui-files.png", depth: 3 },
+  { path: "node_modules", depth: 0 },
+  { path: "src", depth: 0 },
+  { path: "actions", depth: 1 },
+  { path: "appActions.ts", depth: 2, active: true },
+  { path: "components", depth: 1 },
+  { path: "data", depth: 1 },
+  { path: "layout", depth: 1 },
+  { path: "styles", depth: 1 },
+  { path: "App.tsx", depth: 1 },
+  { path: "main.tsx", depth: 1 },
+  { path: "types.ts", depth: 1 },
+  { path: "AGENTS.md", depth: 0, status: "modified" },
+  { path: "bun.lock", depth: 0 },
   { path: ".gitignore", depth: 0, status: "modified" },
 ];
 

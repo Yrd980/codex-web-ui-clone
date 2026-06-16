@@ -21,7 +21,7 @@ export function ToolSwitcher({ onSetView }: ToolSwitcherProps) {
           <button
             key={tool.label}
             className={[
-              "flex h-[52px] w-full items-center gap-3 rounded-[12px] px-3 text-left text-[14px] transition-colors",
+              "flex h-[52px] w-full items-center gap-3 rounded-[12px] px-3 text-left text-[14px] transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
               index === 0 ? "bg-[var(--codex-active)]" : "hover:bg-[var(--codex-hover)]",
             ].join(" ")}
             type="button"

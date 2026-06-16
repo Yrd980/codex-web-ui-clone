@@ -9,7 +9,7 @@
   --codex-diff-added: #40a02b;
   --codex-diff-removed: #d20f39;
   --codex-window: #eef4f9;
-  --codex-sidebar: #e4eaf0;
+  --codex-sidebar: var(--codex-window);
   --codex-main: #eff1f5;
   --codex-surface: #f1f3f6;
   --codex-surface-raised: #f8fafc;
@@ -25,6 +25,11 @@
   --codex-overlay-dim: rgb(76 79 105 / 28%);
   --codex-shadow: 0 24px 80px rgb(76 79 105 / 14%);
   --codex-shadow-soft: 0 16px 48px rgb(76 79 105 / 10%);
+  --codex-motion-fast: 120ms;
+  --codex-motion-base: 180ms;
+  --codex-motion-slow: 240ms;
+  --codex-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --codex-motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: "JetBrainsMono Nerd Font Mono", ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 

@@ -14,7 +14,10 @@ interface ToolSurfaceProps {
   workspaceWidth: number;
   workspaceHeight: number;
   resizingRef: RefObject<boolean>;
+  environmentOpen: boolean;
   onSetView: (view: ActiveView) => void;
+  onToggleEnvironment: () => void;
+  onMinimizeTools: () => void;
 }
 
 const terminalSeedLines = [
@@ -27,7 +30,7 @@ export function isToolSurfaceView(view: ActiveView) {
   return ["tool-switcher", "review", "files", "terminal", "browser", "plugins", "automations"].includes(view);
 }
 
-export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspaceHeight, resizingRef, onSetView }: ToolSurfaceProps) {
+export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspaceHeight, resizingRef, environmentOpen, onSetView, onToggleEnvironment, onMinimizeTools }: ToolSurfaceProps) {
   const [toolPanelRatio, setToolPanelRatio] = useState(codexShellGeometryDefaults.toolPanelRatio);
   const [browserIndex, setBrowserIndex] = useState(0);
   const [browserUseEnabled, setBrowserUseEnabled] = useState(true);
@@ -107,7 +110,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
     >
       <span
         className={[
-          "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors",
+          "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
           "group-hover:bg-[color-mix(in_oklab,var(--codex-accent)_42%,transparent)] group-focus-visible:bg-[var(--codex-accent)]",
           panelResizing ? "bg-[var(--codex-accent)]" : "",
         ].join(" ")}
@@ -132,7 +135,12 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
     <ToolPanelFrame style={geometry.toolPanelStyle}>
       {resizeHandle}
       {activeView === "review" ? <ReviewWorkspace onSetView={onSetView} /> : null}
-      {activeView === "files" ? <FileWorkspace /> : null}
+      {activeView === "files" ? (
+        <FileWorkspace
+          endControls={<ToolPanelEndControls activeView={activeView} onSetView={onSetView} onMinimizeTools={onMinimizeTools} />}
+        />
+      ) : null}
+      {activeView !== "files" && activeView !== "review" ? <ToolPanelControls activeView={activeView} environmentOpen={environmentOpen} onSetView={onSetView} onToggleEnvironment={onToggleEnvironment} onMinimizeTools={onMinimizeTools} /> : null}
       {activeView === "terminal" ? <TerminalPanel terminalLines={terminalLines} onClear={() => setTerminalLines([])} /> : null}
       {activeView === "browser" ? (
         <BrowserPanel
@@ -161,10 +169,83 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
   );
 }
 
+function ToolPanelControls({
+  activeView,
+  environmentOpen,
+  onSetView,
+  onToggleEnvironment,
+  onMinimizeTools,
+}: {
+  activeView: ActiveView;
+  environmentOpen: boolean;
+  onSetView: (view: ActiveView) => void;
+  onToggleEnvironment: () => void;
+  onMinimizeTools: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 text-[var(--codex-text-muted)]">
+      <button
+        className="flex h-9 items-center gap-1.5 rounded-[12px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_65%,transparent)] px-2.5 shadow-[0_6px_18px_rgb(76_79_105_/_0.05)] hover:bg-[var(--codex-hover)]"
+        type="button"
+        aria-label="Open terminal"
+        onClick={() => onSetView(activeView === "terminal" ? "files" : "terminal")}
+      >
+        <CodexIcon name="terminal" className="size-[18px] text-[var(--codex-text)]" />
+        <CodexIcon name="chevronDown" className="size-[14px]" />
+      </button>
+      <button
+        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", environmentOpen ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        type="button"
+        aria-label="Toggle environment panel"
+        onClick={onToggleEnvironment}
+      >
+        <CodexIcon name="layout" className="size-[19px]" />
+      </button>
+      <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
+        <CodexIcon name="minimize" className="size-[18px]" />
+      </button>
+      <button
+        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", activeView !== "chat" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        type="button"
+        aria-label="Toggle side panel"
+        onClick={() => onSetView("chat")}
+      >
+        <CodexIcon name="panel" className="size-[18px]" />
+      </button>
+    </div>
+  );
+}
+
+function ToolPanelEndControls({
+  activeView,
+  onSetView,
+  onMinimizeTools,
+}: {
+  activeView: ActiveView;
+  onSetView: (view: ActiveView) => void;
+  onMinimizeTools: () => void;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1 text-[var(--codex-text-muted)]">
+      <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
+        <CodexIcon name="minimize" className="size-[18px]" />
+      </button>
+      <button
+        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", activeView !== "chat" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        type="button"
+        aria-label="Toggle side panel"
+        onClick={() => onSetView("chat")}
+      >
+        <CodexIcon name="panel" className="size-[18px]" />
+      </button>
+    </div>
+  );
+}
+
 function ToolPanelFrame({ style, children }: { style: CSSProperties; children: ReactNode }) {
   return (
     <div
-      className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] lg:relative lg:inset-auto lg:w-[var(--tool-panel-width)] lg:min-w-0 lg:flex-none lg:shadow-none"
+      className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] lg:relative lg:inset-auto lg:w-[var(--tool-panel-width)] lg:min-w-0 lg:flex-none lg:shadow-none"
       style={style}
     >
       {children}

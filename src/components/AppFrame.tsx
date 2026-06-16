@@ -181,7 +181,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
           >
             <span
               className={[
-                "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors",
+                "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
                 "group-hover:bg-[color-mix(in_oklab,var(--codex-accent)_42%,transparent)] group-focus-visible:bg-[var(--codex-accent)]",
                 sidebarResizing ? "bg-[var(--codex-accent)]" : "",
               ].join(" ")}

@@ -52,7 +52,7 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
         if (!docked) onFloatingMouseLeave();
       }}
       className={[
-        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-[transform,box-shadow] duration-200 ease-out lg:text-[14px]",
+        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-[transform,box-shadow] duration-[var(--codex-motion-slow)] ease-[var(--codex-motion-ease-out)] will-change-transform lg:text-[14px]",
         docked ? "lg:relative lg:translate-x-0" : "lg:absolute lg:inset-y-0 lg:left-0 lg:shadow-[var(--codex-shadow)]",
         "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw_-_var(--sidebar-floating-edge)))] max-lg:shadow-[var(--codex-shadow)]",
         docked ? "max-lg:-translate-x-full" : "",
@@ -105,7 +105,7 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                     >
                       <button
                         className={[
-                          "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors",
+                          "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
                           active ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]",
                         ].join(" ")}
                         type="button"

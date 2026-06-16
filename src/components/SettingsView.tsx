@@ -82,12 +82,12 @@ export function SettingsView({ activeSection, onSetSection }: SettingsViewProps)
                     </div>
                     {label === "Animations" || label === "Browser Use" || label === "Computer Use" ? (
                       <button
-                        className={["relative h-6 w-11 rounded-full transition-colors", enabledRows.includes(label) ? "bg-[var(--codex-accent)]" : "bg-[var(--codex-surface-muted)]"].join(" ")}
+                        className={["relative h-6 w-11 rounded-full transition-colors duration-[var(--codex-motion-base)] ease-[var(--codex-motion-ease)]", enabledRows.includes(label) ? "bg-[var(--codex-accent)]" : "bg-[var(--codex-surface-muted)]"].join(" ")}
                         type="button"
                         aria-label={`Toggle ${label}`}
                         onClick={() => toggleRow(label)}
                       >
-                        <span className={["absolute top-1 size-4 rounded-full bg-white transition-transform", enabledRows.includes(label) ? "translate-x-[22px]" : "translate-x-1"].join(" ")} />
+                        <span className={["absolute top-1 size-4 rounded-full bg-white transition-transform duration-[var(--codex-motion-base)] ease-[var(--codex-motion-ease-out)]", enabledRows.includes(label) ? "translate-x-[22px]" : "translate-x-1"].join(" ")} />
                       </button>
                     ) : label === "Work mode" ? (
                       <div className="flex h-9 overflow-hidden rounded-[10px] bg-[var(--codex-surface-muted)] p-0.5 text-[12px]">
