@@ -1,14 +1,19 @@
 import { useState } from "react";
+import type { IconName } from "../types";
 import { CodexIcon } from "./CodexIcon";
 
 interface TopMenuProps {
+  sidebarDocked: boolean;
+  sidebarOpen: boolean;
   onToggleSidebar: () => void;
 }
 
-export function TopMenu({ onToggleSidebar }: TopMenuProps) {
+export function TopMenu({ sidebarDocked, sidebarOpen, onToggleSidebar }: TopMenuProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [navStatus, setNavStatus] = useState("Current thread");
   const [windowStatus, setWindowStatus] = useState("Window active");
+  const sidebarVisible = sidebarDocked || sidebarOpen;
+  const sidebarIcon: IconName = sidebarVisible ? "sideBarOpen" : "sideBarClosed";
   const menuRows: Record<string, string[]> = {
     File: ["New thread", "Open folder", "Save appshot"],
     Edit: ["Find in thread", "Copy response", "Clear selection"],
@@ -20,7 +25,7 @@ export function TopMenu({ onToggleSidebar }: TopMenuProps) {
     <header className="relative flex h-10 shrink-0 items-center justify-between border-b border-[var(--codex-border-soft)] bg-[var(--codex-window)] px-1 text-[13px] text-[var(--codex-text-muted)]">
       <div className="flex h-full min-w-0 items-center gap-1">
         <button className="grid size-7 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Toggle sidebar" onClick={onToggleSidebar}>
-          <CodexIcon name="sideChat" className="size-[18px]" />
+          <CodexIcon name={sidebarIcon} className="size-[18px]" />
         </button>
         <button
           className="hidden size-7 place-items-center rounded-[7px] text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] sm:grid"

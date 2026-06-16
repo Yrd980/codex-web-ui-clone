@@ -14,9 +14,10 @@ interface SidebarProps {
   open: boolean;
   docked: boolean;
   style: CSSProperties;
+  onFloatingMouseLeave: () => void;
 }
 
-export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open, docked, style }: SidebarProps) {
+export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread, onSetView, open, docked, style, onFloatingMouseLeave }: SidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const [activeProjectId, setActiveProjectId] = useState(groups[0]?.id ?? "");
   const [hoveredThreadPreview, setHoveredThreadPreview] = useState<{
@@ -47,11 +48,16 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
   return (
     <aside
       style={style}
+      onMouseLeave={() => {
+        if (!docked) onFloatingMouseLeave();
+      }}
       className={[
-        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-transform duration-200 lg:text-[14px]",
+        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-[transform,box-shadow] duration-200 ease-out lg:text-[14px]",
         docked ? "lg:relative lg:translate-x-0" : "lg:absolute lg:inset-y-0 lg:left-0 lg:shadow-[var(--codex-shadow)]",
         "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw_-_var(--sidebar-floating-edge)))] max-lg:shadow-[var(--codex-shadow)]",
-        open ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
+        docked ? "max-lg:-translate-x-full" : "",
+        !docked && open ? "max-lg:translate-x-0" : "",
+        !docked && !open ? "max-lg:-translate-x-full" : "",
         !docked && open ? "lg:translate-x-0" : "",
         !docked && !open ? "lg:-translate-x-full" : "",
       ].join(" ")}

@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, RefObject, ReactNode } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { browserHistory } from "../data/scenarios/toolScenario";
 import { clampToolPanelWidth, codexShellGeometryDefaults, getToolSurfaceGeometry } from "../layout/codexShellGeometry";
 import type { ActiveView } from "../types";
@@ -35,16 +35,29 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
   const [terminalLines, setTerminalLines] = useState(terminalSeedLines);
   const [enabledPlugins, setEnabledPlugins] = useState(["Browser", "GitHub", "OpenAI Developers"]);
   const [enabledAutomations, setEnabledAutomations] = useState(["Build monitor"]);
+  const [panelResizing, setPanelResizing] = useState(false);
+  const ignoreMouseResizeRef = useRef(false);
   const browserUrl = browserHistory[browserIndex] ?? browserHistory[0];
   const geometry = getToolSurfaceGeometry({ width: workspaceWidth, height: workspaceHeight, toolPanelRatio });
 
   const startPanelResize = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement> | ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.type === "mousedown" && ignoreMouseResizeRef.current) return;
       if (event.button !== 0 || resizingRef.current) return;
       if (!workspaceRef.current) return;
 
       event.preventDefault();
+      const resizeHandle = event.currentTarget;
+      const pointerId = "pointerId" in event ? event.pointerId : null;
+      if ("pointerId" in event && event.currentTarget.hasPointerCapture?.(event.pointerId) === false) {
+        ignoreMouseResizeRef.current = true;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        window.setTimeout(() => {
+          ignoreMouseResizeRef.current = false;
+        }, 250);
+      }
       resizingRef.current = true;
+      setPanelResizing(true);
       const workspace = workspaceRef.current;
       const previousCursor = document.body.style.cursor;
       const previousUserSelect = document.body.style.userSelect;
@@ -53,6 +66,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
       document.body.style.userSelect = "none";
 
       const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
+        moveEvent.preventDefault();
         const bounds = workspace.getBoundingClientRect();
         const nextWidth = clampToolPanelWidth(bounds.right - moveEvent.clientX, bounds.width);
         setToolPanelRatio(nextWidth / bounds.width);
@@ -60,8 +74,12 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
 
       const handleUp = () => {
         resizingRef.current = false;
+        setPanelResizing(false);
         document.body.style.cursor = previousCursor;
         document.body.style.userSelect = previousUserSelect;
+        if (pointerId !== null && resizeHandle.hasPointerCapture?.(pointerId)) {
+          resizeHandle.releasePointerCapture(pointerId);
+        }
         window.removeEventListener("pointermove", handleMove);
         window.removeEventListener("pointerup", handleUp);
         window.removeEventListener("mousemove", handleMove);
@@ -78,12 +96,23 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
 
   const resizeHandle = (
     <button
-      className="absolute inset-y-0 left-0 z-30 hidden w-4 -translate-x-2 cursor-col-resize touch-none rounded-full outline-none hover:bg-[color-mix(in_oklab,var(--codex-accent)_12%,transparent)] focus-visible:bg-[color-mix(in_oklab,var(--codex-accent)_16%,transparent)] xl:block"
+      className={[
+        "group absolute inset-y-0 left-0 z-30 hidden w-7 -translate-x-3.5 cursor-col-resize touch-none outline-none lg:block",
+        panelResizing ? "bg-[color-mix(in_oklab,var(--codex-accent)_8%,transparent)]" : "",
+      ].join(" ")}
       type="button"
       aria-label="Resize tool panel"
       onPointerDown={startPanelResize}
       onMouseDown={startPanelResize}
-    />
+    >
+      <span
+        className={[
+          "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors",
+          "group-hover:bg-[color-mix(in_oklab,var(--codex-accent)_42%,transparent)] group-focus-visible:bg-[var(--codex-accent)]",
+          panelResizing ? "bg-[var(--codex-accent)]" : "",
+        ].join(" ")}
+      />
+    </button>
   );
 
   if (activeView === "tool-switcher") {
@@ -135,7 +164,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
 function ToolPanelFrame({ style, children }: { style: CSSProperties; children: ReactNode }) {
   return (
     <div
-      className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] xl:relative xl:inset-auto xl:w-[var(--tool-panel-width)] xl:min-w-0 xl:flex-none xl:shadow-none"
+      className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] items-center justify-center overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] lg:relative lg:inset-auto lg:w-[var(--tool-panel-width)] lg:min-w-0 lg:flex-none lg:shadow-none"
       style={style}
     >
       {children}

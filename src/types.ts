@@ -51,6 +51,8 @@ export type IconName =
   | "search"
   | "send"
   | "settings"
+  | "sideBarClosed"
+  | "sideBarOpen"
   | "sideChat"
   | "tray"
   | "spinner"

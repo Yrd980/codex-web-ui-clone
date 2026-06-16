@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
-import { clampSidebarWidth, codexShellGeometryDefaults, getCollapseSidebarWidth, getSidebarFrame, getViewportWidth } from "../layout/codexShellGeometry";
+import { clampSidebarWidth, codexShellGeometryDefaults, getSidebarBounds, getSidebarFrame, getViewportWidth } from "../layout/codexShellGeometry";
 import type { ActiveView, ProjectGroup } from "../types";
 import { Sidebar } from "./Sidebar";
 import { TopMenu } from "./TopMenu";
@@ -20,46 +20,95 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
   const [sidebarDocked, setSidebarDocked] = useState(true);
   const [sidebarRatio, setSidebarRatio] = useState(codexShellGeometryDefaults.sidebarRatio);
   const [viewportWidth, setViewportWidth] = useState(() => getViewportWidth());
+  const [sidebarResizing, setSidebarResizing] = useState(false);
+  const [sidebarOpenedByHover, setSidebarOpenedByHover] = useState(false);
   const resizingSidebarRef = useRef(false);
+  const ignoreMouseResizeRef = useRef(false);
 
   const sidebarFrame = getSidebarFrame({ docked: sidebarDocked, ratio: sidebarRatio, viewportWidth });
-  const sidebarFloating = !sidebarDocked || sidebarOpen;
+  const sidebarFloating = !sidebarDocked;
 
   const handleSetView = (view: ActiveView) => {
     onSetView(view);
-    setSidebarOpen(false);
+    if (sidebarFloating) {
+      setSidebarOpen(false);
+      setSidebarOpenedByHover(false);
+    }
   };
 
   const handleSelectThread = (threadId: string) => {
     onSelectThread(threadId);
-    setSidebarOpen(false);
+    if (sidebarFloating) {
+      setSidebarOpen(false);
+      setSidebarOpenedByHover(false);
+    }
   };
 
   const handleToggleSidebar = () => {
-    if (!sidebarDocked) {
-      setSidebarOpen((open) => !open);
+    setSidebarOpenedByHover(false);
+
+    if (sidebarDocked) {
+      setSidebarOpen(false);
+      setSidebarDocked(false);
       return;
     }
 
-    setSidebarDocked(false);
-    setSidebarOpen(true);
+    setSidebarOpen(false);
+    setSidebarDocked(true);
   };
 
   const startSidebarResize = useCallback((event: ReactMouseEvent<HTMLButtonElement> | ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.type === "mousedown" && ignoreMouseResizeRef.current) return;
     if (event.button !== 0 || resizingSidebarRef.current || !sidebarDocked) return;
 
     event.preventDefault();
+    const resizeHandle = event.currentTarget;
+    const pointerId = "pointerId" in event ? event.pointerId : null;
+    if ("pointerId" in event && event.currentTarget.hasPointerCapture?.(event.pointerId) === false) {
+      ignoreMouseResizeRef.current = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      window.setTimeout(() => {
+        ignoreMouseResizeRef.current = false;
+      }, 250);
+    }
     resizingSidebarRef.current = true;
+    setSidebarResizing(true);
     const previousCursor = document.body.style.cursor;
     const previousUserSelect = document.body.style.userSelect;
 
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
 
-    const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
-      if (moveEvent.clientX < getCollapseSidebarWidth(window.innerWidth)) {
-        setSidebarDocked(false);
+    const finishResize = () => {
+      resizingSidebarRef.current = false;
+      setSidebarResizing(false);
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      if (pointerId !== null && resizeHandle.hasPointerCapture?.(pointerId)) {
+        resizeHandle.releasePointerCapture(pointerId);
+      }
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+
+    const floatSidebar = () => {
+      finishResize();
+      setSidebarOpen(false);
+      setSidebarOpenedByHover(false);
+      setSidebarDocked(false);
+      requestAnimationFrame(() => {
         setSidebarOpen(true);
+        setSidebarOpenedByHover(true);
+      });
+    };
+
+    const handleMove = (moveEvent: MouseEvent | PointerEvent) => {
+      moveEvent.preventDefault();
+      const sidebarMinWidth = getSidebarBounds(window.innerWidth).min;
+      if (moveEvent.clientX <= sidebarMinWidth) {
+        floatSidebar();
         return;
       }
       const nextWidth = clampSidebarWidth(moveEvent.clientX, window.innerWidth);
@@ -67,13 +116,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
     };
 
     const handleUp = () => {
-      resizingSidebarRef.current = false;
-      document.body.style.cursor = previousCursor;
-      document.body.style.userSelect = previousUserSelect;
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleUp);
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
+      finishResize();
     };
 
     window.addEventListener("pointermove", handleMove);
@@ -93,16 +136,19 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
 
   return (
     <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[var(--codex-window)] text-[var(--codex-text)]">
-      <TopMenu onToggleSidebar={handleToggleSidebar} />
+      <TopMenu sidebarDocked={sidebarDocked} sidebarOpen={sidebarOpen} onToggleSidebar={handleToggleSidebar} />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        {sidebarFloating ? (
-          <button
-            className="absolute inset-0 z-30 bg-[rgb(76_79_105_/_0.18)]"
-            type="button"
-            aria-label="Close sidebar"
-            onClick={() => {
-              setSidebarOpen(false);
-              setSidebarDocked(true);
+        {sidebarFloating && !sidebarOpen ? (
+          <div
+            className="absolute inset-y-0 left-0 z-40 w-3"
+            aria-hidden="true"
+            onMouseEnter={() => {
+              setSidebarOpenedByHover(true);
+              setSidebarOpen(true);
+            }}
+            onPointerEnter={() => {
+              setSidebarOpenedByHover(true);
+              setSidebarOpen(true);
             }}
           />
         ) : null}
@@ -115,16 +161,32 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
           open={sidebarOpen}
           docked={sidebarDocked}
           style={sidebarFrame.style}
+          onFloatingMouseLeave={() => {
+            if (!sidebarOpenedByHover) return;
+            setSidebarOpen(false);
+            setSidebarOpenedByHover(false);
+          }}
         />
         {sidebarDocked ? (
           <button
-            className="absolute inset-y-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent outline-none lg:block"
+            className={[
+              "group absolute inset-y-0 z-50 hidden w-6 -translate-x-1/2 cursor-col-resize touch-none bg-transparent outline-none lg:block",
+              sidebarResizing ? "bg-[color-mix(in_oklab,var(--codex-accent)_8%,transparent)]" : "",
+            ].join(" ")}
             style={{ left: `${sidebarFrame.width}px` }}
             type="button"
             aria-label="Resize sidebar"
             onPointerDown={startSidebarResize}
             onMouseDown={startSidebarResize}
-          />
+          >
+            <span
+              className={[
+                "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-transparent transition-colors",
+                "group-hover:bg-[color-mix(in_oklab,var(--codex-accent)_42%,transparent)] group-focus-visible:bg-[var(--codex-accent)]",
+                sidebarResizing ? "bg-[var(--codex-accent)]" : "",
+              ].join(" ")}
+            />
+          </button>
         ) : null}
         <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-tl-[18px] border-l border-t border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[inset_1px_1px_0_rgb(255_255_255_/_0.32)] max-lg:rounded-tl-none max-lg:border-l-0">
           {children}
