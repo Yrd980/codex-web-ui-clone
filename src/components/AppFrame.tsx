@@ -140,7 +140,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {sidebarFloating && !sidebarOpen ? (
           <div
-            className="absolute inset-y-0 left-0 z-40 w-3"
+            className="codex-layer-drawer absolute inset-y-0 left-0 w-3"
             aria-hidden="true"
             onMouseEnter={() => {
               setSidebarOpenedByHover(true);
@@ -170,7 +170,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
         {sidebarDocked ? (
           <button
             className={[
-              "group absolute inset-y-0 z-50 hidden w-6 -translate-x-1/2 cursor-col-resize touch-none bg-transparent outline-none lg:block",
+              "codex-layer-popover group absolute inset-y-0 hidden w-6 -translate-x-1/2 cursor-col-resize touch-none bg-transparent outline-none lg:block",
               sidebarResizing ? "bg-[color-mix(in_oklab,var(--codex-accent)_8%,transparent)]" : "",
             ].join(" ")}
             style={{ left: `${sidebarFrame.width}px` }}
@@ -188,7 +188,7 @@ export function AppFrame({ activeThreadId, groups, onOpenPalette, onSelectThread
             />
           </button>
         ) : null}
-        <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-tl-[18px] border-l border-t border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[inset_1px_1px_0_rgb(255_255_255_/_0.32)] max-lg:rounded-tl-none max-lg:border-l-0">
+        <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-tl-[1.125rem] border-l border-t border-[var(--codex-border-soft)] bg-[var(--codex-main)] shadow-[inset_0.0625rem_0.0625rem_0_rgb(255_255_255_/_0.32)] max-lg:rounded-tl-none max-lg:border-l-0">
           {children}
         </div>
       </div>

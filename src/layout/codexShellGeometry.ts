@@ -30,7 +30,11 @@ const CHAT_TRACK_INLINE_GUARD_RATIO = 0.026;
 const PANEL_OVERLAY_EDGE_RATIO = 0.018;
 const BROWSER_PREVIEW_INSET_X_RATIO = 0.058;
 const BROWSER_PREVIEW_INSET_Y_RATIO = 0.064;
-const ENVIRONMENT_MIN_VISIBLE_WIDTH = 1024;
+const ENVIRONMENT_MIN_VISIBLE_ASPECT_RATIO = 1.15;
+
+function ratioPercent(value: number, whole: number) {
+  return `${whole ? (value / whole) * 100 : 0}%`;
+}
 
 export const codexShellGeometryDefaults = {
   sidebarRatio: SIDEBAR_DEFAULT_RATIO,
@@ -59,6 +63,7 @@ export interface ChatWorkspaceGeometry {
   environmentRightInset: number;
   environmentTopInset: number;
   environmentReservedWidth: number;
+  environmentStyle: CSSProperties;
   chatTrackWidth: number;
   chatTrackOffset: number;
   composerTrackWidth: number;
@@ -78,6 +83,7 @@ export interface ToolSurfaceGeometryInput extends WorkspaceSize {
 export interface ToolSurfaceGeometry {
   toolSwitcherStyle: CSSProperties;
   toolPanelStyle: CSSProperties;
+  browserPreviewStyle: CSSProperties;
   toolPanelWidth: number;
   browserPreviewInsetX: number;
   browserPreviewInsetY: number;
@@ -114,8 +120,8 @@ export function getSidebarFrame(input: { docked: boolean; ratio: number; viewpor
     width,
     floatingEdge,
     style: {
-      "--sidebar-width": `${width}px`,
-      "--sidebar-floating-edge": `${floatingEdge}px`,
+      "--sidebar-width": `${(width / input.viewportWidth) * 100}vw`,
+      "--sidebar-floating-edge": `${SIDEBAR_FLOATING_EDGE_RATIO * 100}vw`,
     } as CSSProperties,
   };
 }
@@ -134,7 +140,7 @@ export function getChatWorkspaceGeometry({
   environmentOpen,
   hasToolOverlay,
 }: ChatWorkspaceGeometryInput): ChatWorkspaceGeometry {
-  const canReserveEnvironment = width >= ENVIRONMENT_MIN_VISIBLE_WIDTH && width > height * 1.15;
+  const canReserveEnvironment = width > height * ENVIRONMENT_MIN_VISIBLE_ASPECT_RATIO;
   const environmentPanelWidth = Math.round(width * ENVIRONMENT_PANEL_RATIO);
   const environmentRightInset = Math.round(width * ENVIRONMENT_RIGHT_INSET_RATIO);
   const environmentTopInset = Math.round(height * ENVIRONMENT_TOP_INSET_RATIO);
@@ -157,6 +163,11 @@ export function getChatWorkspaceGeometry({
     environmentRightInset,
     environmentTopInset,
     environmentReservedWidth,
+    environmentStyle: {
+      "--environment-panel-width": `${ENVIRONMENT_PANEL_RATIO * 100}%`,
+      "--environment-right-inset": `${ENVIRONMENT_RIGHT_INSET_RATIO * 100}%`,
+      "--environment-top-inset": `${ENVIRONMENT_TOP_INSET_RATIO * 100}%`,
+    } as CSSProperties,
     chatTrackWidth,
     chatTrackOffset,
     composerTrackWidth,
@@ -167,10 +178,10 @@ export function getChatWorkspaceGeometry({
     composerSurfacePadY,
     composerTextareaHeight,
     chatTrackStyle: {
-      "--chat-track-width": `${chatTrackWidth}px`,
-      "--chat-track-offset": `${chatTrackOffset}px`,
-      "--chat-stream-bottom-pad": `${chatStreamBottomPad}px`,
-      "--chat-track-inline-guard": `${chatTrackInlineGuard}px`,
+      "--chat-track-width": `${CHAT_TRACK_RATIO * 100}%`,
+      "--chat-track-offset": ratioPercent(chatTrackOffset, width),
+      "--chat-stream-bottom-pad": ratioPercent(chatStreamBottomPad, height),
+      "--chat-track-inline-guard": ratioPercent(chatTrackInlineGuard, width),
     } as CSSProperties,
   };
 }
@@ -189,14 +200,18 @@ export function getToolSurfaceGeometry({ width, height, toolPanelRatio }: ToolSu
     browserPreviewInsetX,
     browserPreviewInsetY,
     toolPanelStyle: {
-      "--tool-panel-width": `${toolPanelWidth}px`,
-      "--panel-overlay-edge": `${panelOverlayEdge}px`,
+      "--tool-panel-width": ratioPercent(toolPanelWidth, width),
+      "--panel-overlay-edge": ratioPercent(panelOverlayEdge, width),
     } as CSSProperties,
     toolSwitcherStyle: {
-      "--tool-switcher-width": `${toolSwitcherWidth}px`,
-      "--tool-switcher-height": `${toolSwitcherHeight}px`,
-      "--tool-switcher-edge-gap": `${toolSwitcherEdgeGap}px`,
-      "--tool-switcher-vertical-clearance": `${Math.round(height * TOOL_SWITCHER_VERTICAL_CLEARANCE_RATIO)}px`,
+      "--tool-switcher-width": ratioPercent(toolSwitcherWidth, width),
+      "--tool-switcher-height": ratioPercent(toolSwitcherHeight, height),
+      "--tool-switcher-edge-gap": ratioPercent(toolSwitcherEdgeGap, width),
+      "--tool-switcher-vertical-clearance": `${TOOL_SWITCHER_VERTICAL_CLEARANCE_RATIO * 100}%`,
+    } as CSSProperties,
+    browserPreviewStyle: {
+      "--browser-preview-inset-x": `${BROWSER_PREVIEW_INSET_X_RATIO * 100}%`,
+      "--browser-preview-inset-y": `${BROWSER_PREVIEW_INSET_Y_RATIO * 100}%`,
     } as CSSProperties,
   };
 }

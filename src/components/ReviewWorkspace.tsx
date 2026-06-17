@@ -17,16 +17,14 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <div className="flex h-full min-w-0 flex-1 bg-[color-mix(in_oklab,var(--codex-surface)_78%,transparent)]">
+    <div className="codex-panel-root flex h-full min-w-0 flex-1">
       <section className="flex min-w-0 flex-1 flex-col">
-        <div className="relative flex h-11 items-center gap-1 border-b border-[var(--codex-border-soft)] px-3">
+        <div className="codex-panel-bar relative flex items-center gap-1 border-b px-3">
           {["Review", "Terminal", "Browser"].map((tab) => (
             <button
               key={tab}
-              className={[
-                "h-8 rounded-[9px] px-3 text-[12px]",
-                tab === "Review" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]",
-              ].join(" ")}
+              className="codex-tab-button w-auto"
+              data-active={tab === "Review"}
               type="button"
               onClick={() => {
                 if (tab === "Terminal") onSetView("terminal");
@@ -37,11 +35,12 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
             </button>
           ))}
         </div>
-        <div className="flex h-12 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-muted)]">
+        <div className="codex-subbar flex items-center gap-2 border-b px-3">
           {(["Last turn", "Uncommitted", "All branch changes"] as ReviewScope[]).map((item) => (
             <button
               key={item}
-              className={["h-8 rounded-[9px] px-3", scope === item ? "bg-[var(--codex-surface-muted)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]"].join(" ")}
+              className="codex-muted-button"
+              data-active={scope === item}
               type="button"
               onClick={() => setScope(item)}
             >
@@ -52,7 +51,8 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           {(["Unstaged", "Staged"] as const).map((item) => (
             <button
               key={item}
-              className={["h-8 rounded-[9px] px-2.5", stageFilter === item ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]"].join(" ")}
+              className="codex-muted-button"
+              data-active={stageFilter === item}
               type="button"
               onClick={() => setStageFilter(item)}
             >
@@ -63,15 +63,15 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           <span className="text-[var(--codex-diff-removed)]">-{staged ? 7 : 0}</span>
           <span className="flex-1" />
           <div className="relative">
-            <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)]" type="button" aria-label="More" onClick={() => setMoreOpen((open) => !open)}>
+            <button className="codex-icon-button !size-[var(--codex-control-sm)]" type="button" aria-label="More" onClick={() => setMoreOpen((open) => !open)}>
               <CodexIcon name="more" className="size-4" />
             </button>
             {moreOpen ? (
-              <div className="absolute right-0 top-full z-30 mt-1 w-[18vw] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
+              <div className="codex-popover absolute right-0 top-full mt-1 w-[18vw] p-1.5">
                 {["Revert hunk", "Copy file path", "Open in files"].map((item) => (
                   <button
                     key={item}
-                    className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
+                    className="codex-row-button codex-row-sm text-[var(--codex-type-sm)]"
                     type="button"
                     onClick={() => {
                       if (item === "Open in files") onSetView("files");
@@ -85,7 +85,7 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
             ) : null}
           </div>
           <button
-            className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3"
+            className="codex-muted-button"
             type="button"
             onClick={() => {
               setStaged((value) => !value);
@@ -94,28 +94,28 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           >
             {staged ? "Unstage all" : "Stage all"}
           </button>
-          <button className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3" type="button" onClick={() => setCommitState("committed")}>
+          <button className="codex-muted-button" type="button" onClick={() => setCommitState("committed")}>
             {commitState === "committed" ? "Committed" : "Commit"}
           </button>
-          <button className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3 text-[var(--codex-text-faint)]" type="button" onClick={() => setPrState("created")}>
+          <button className="codex-muted-button text-[var(--codex-text-faint)]" type="button" onClick={() => setPrState("created")}>
             {prState === "created" ? "PR ready" : "Create PR"}
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-auto bg-[color-mix(in_oklab,var(--codex-surface-muted)_36%,transparent)] px-4 py-3">
           {diffFiles.map((file) => (
             <div key={file.path} className="overflow-hidden border-y border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_64%,transparent)]">
-              <div className="flex h-10 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px]">
+              <div className="codex-compact-bar flex items-center gap-2 border-b px-3">
                 <CodexIcon name="file" className="size-4 text-[var(--codex-text-muted)]" />
                 <span className="min-w-0 flex-1 truncate">{file.path}</span>
                 <span className="text-[var(--codex-diff-added)]">+{file.additions}</span>
                 <span className="text-[var(--codex-diff-removed)]">-{file.removals}</span>
               </div>
-              <pre className="m-0 bg-transparent py-2 text-[12px] leading-6">
+              <pre className="m-0 bg-transparent py-2 text-[0.75rem] leading-6">
                 {file.lines.map((line, index) => (
                   <div
                     key={`${line.text}-${index}`}
                     className={[
-                      "grid grid-cols-[48px_48px_1fr] px-3",
+                      "grid grid-cols-[3rem_3rem_1fr] px-3",
                       line.kind === "add" ? "bg-[color-mix(in_oklab,var(--codex-diff-added)_13%,transparent)]" : "",
                       line.kind === "remove" ? "bg-[color-mix(in_oklab,var(--codex-diff-removed)_12%,transparent)]" : "",
                       line.kind === "meta" ? "text-[var(--codex-text-faint)]" : "",
@@ -125,7 +125,7 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
                     <span className="text-right text-[var(--codex-text-faint)]">{line.oldLine ?? ""}</span>
                     <span className="text-right text-[var(--codex-text-faint)]">{line.newLine ?? ""}</span>
                     <code className="pl-4">{line.text}</code>
-                    {commentLine === line.text ? <div className="col-span-3 ml-24 mt-1 rounded-[10px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 py-2 text-[12px]">Inline comment: keep this change minimal.</div> : null}
+                    {commentLine === line.text ? <div className="col-span-3 ml-24 mt-1 rounded-[0.625rem] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 py-2 text-[0.75rem]">Inline comment: keep this change minimal.</div> : null}
                   </div>
                 ))}
               </pre>
@@ -133,15 +133,16 @@ export function ReviewWorkspace({ onSetView }: ReviewWorkspaceProps) {
           ))}
         </div>
       </section>
-      <aside className="hidden w-[24%] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[12px] text-[var(--codex-text-muted)] lg:block">
-        <div className="mb-3 flex h-9 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_55%,transparent)] px-3 text-[var(--codex-text-faint)]">
+      <aside className="hidden w-[var(--codex-review-rail-width)] shrink-0 border-l border-[var(--codex-border-soft)] p-3 text-[0.75rem] text-[var(--codex-text-muted)] lg:block">
+        <div className="codex-field mb-3">
           <CodexIcon name="search" className="size-4" />
           <span>Filter files...</span>
         </div>
         {fileTree.map((item) => (
           <div
             key={item.path}
-            className={["flex h-7 items-center gap-2 rounded-[8px] px-2", item.active ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+            className="codex-row-button !min-h-[1.75rem] gap-2"
+            data-active={item.active}
             style={{ paddingLeft: 8 + item.depth * 12 }}
           >
             <span className="truncate">{item.path}</span>

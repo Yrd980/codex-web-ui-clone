@@ -9,6 +9,7 @@ Primary references:
 - `docs/references/codex-app-screenshots/`
 - `docs/superpowers/specs/2026-06-10-codex-web-ui-ux-clone-design.md`
 - `docs/superpowers/plans/2026-06-10-codex-web-ui-ux-clone-implementation.md`
+- `DESIGN.md`
 
 ## Working Rules
 
@@ -22,6 +23,7 @@ Primary references:
 ## Design Notes
 
 - The first screen should remain the usable Codex-style workbench, not a marketing landing page.
+- Follow `DESIGN.md` for reusable design tokens, component semantics, z-index layers, and abstraction boundaries.
 - Tool panels should remain responsive: docked on wide screens and overlay/floating on narrower screens.
 - Keep text compact, especially in the sidebar and environment panel.
 - Prefer the existing `CodexIcon` component for interface icons.

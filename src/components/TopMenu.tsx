@@ -22,39 +22,39 @@ export function TopMenu({ sidebarDocked, sidebarOpen, onToggleSidebar }: TopMenu
   };
 
   return (
-    <header className="relative flex h-10 shrink-0 items-center justify-between border-b border-[var(--codex-border-soft)] bg-[var(--codex-window)] px-1 text-[13px] text-[var(--codex-text-muted)]">
+    <header className="codex-chrome-bar relative flex shrink-0 items-center justify-between border-b px-1 text-[0.8125rem]">
       <div className="flex h-full min-w-0 items-center gap-1">
-        <button className="grid size-7 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Toggle sidebar" onClick={onToggleSidebar}>
-          <CodexIcon name={sidebarIcon} className="size-[18px]" />
+        <button className="codex-icon-button !size-[var(--codex-control-xs)]" type="button" aria-label="Toggle sidebar" onClick={onToggleSidebar}>
+          <CodexIcon name={sidebarIcon} className="codex-icon-md" />
         </button>
         <button
-          className="hidden size-7 place-items-center rounded-[7px] text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] sm:grid"
+          className="codex-icon-button !size-[var(--codex-control-xs)] hidden text-[var(--codex-text-faint)] sm:grid"
           type="button"
           aria-label="Back"
           onClick={() => setNavStatus("Back to previous thread")}
         >
-          <CodexIcon name="back" className="size-[18px]" />
+          <CodexIcon name="back" className="codex-icon-md" />
         </button>
         <button
-          className="hidden size-7 place-items-center rounded-[7px] text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)] sm:grid"
+          className="codex-icon-button !size-[var(--codex-control-xs)] hidden text-[var(--codex-text-faint)] sm:grid"
           type="button"
           aria-label="Forward"
           onClick={() => setNavStatus("Forward to next thread")}
         >
-          <CodexIcon name="forward" className="size-[18px]" />
+          <CodexIcon name="forward" className="codex-icon-md" />
         </button>
-        <span className="hidden max-w-[clamp(10rem,18vw,16rem)] truncate px-2 text-[12px] text-[var(--codex-text-faint)] lg:block">{windowStatus === "Window active" ? navStatus : windowStatus}</span>
+        <span className="hidden max-w-[clamp(10rem,18vw,16rem)] truncate px-2 text-[0.75rem] text-[var(--codex-text-faint)] lg:block">{windowStatus === "Window active" ? navStatus : windowStatus}</span>
         {Object.keys(menuRows).map((item) => (
           <div key={item} className="relative hidden md:block">
-            <button className={["rounded-[8px] px-2.5 py-1.5 hover:bg-[var(--codex-hover)]", openMenu === item ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")} type="button" onClick={() => setOpenMenu(openMenu === item ? null : item)}>
+            <button className="codex-menu-button" data-active={openMenu === item} type="button" onClick={() => setOpenMenu(openMenu === item ? null : item)}>
               {item}
             </button>
             {openMenu === item ? (
-              <div className="absolute left-0 top-full z-50 mt-1 w-[clamp(11rem,14vw,14rem)] rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] p-1.5 shadow-[var(--codex-shadow-soft)]">
+              <div className="codex-popover absolute left-0 top-full mt-1 w-[clamp(11rem,14vw,14rem)] p-1.5">
                 {menuRows[item].map((row) => (
                   <button
                     key={row}
-                    className="flex h-8 w-full items-center rounded-[8px] px-2 text-left text-[12px] hover:bg-[var(--codex-hover)]"
+                    className="codex-row-button codex-row-sm text-[0.75rem]"
                     type="button"
                     onClick={() => {
                       setNavStatus(row);
@@ -70,14 +70,14 @@ export function TopMenu({ sidebarDocked, sidebarOpen, onToggleSidebar }: TopMenu
         ))}
       </div>
       <div className="flex h-full items-center gap-1 text-[var(--codex-text-faint)]">
-        <button className="grid h-7 w-9 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize window" onClick={() => setWindowStatus("Window minimized preview")}>
-          <CodexIcon name="minimize" className="size-[18px]" />
+        <button className="codex-icon-button !h-[var(--codex-control-xs)] !w-9" type="button" aria-label="Minimize window" onClick={() => setWindowStatus("Window minimized preview")}>
+          <CodexIcon name="minimize" className="codex-icon-md" />
         </button>
-        <button className="grid h-7 w-9 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Window layout" onClick={() => setWindowStatus("Window layout toggled")}>
-          <CodexIcon name="panel" className="size-[18px]" />
+        <button className="codex-icon-button !h-[var(--codex-control-xs)] !w-9" type="button" aria-label="Window layout" onClick={() => setWindowStatus("Window layout toggled")}>
+          <CodexIcon name="panel" className="codex-icon-md" />
         </button>
-        <button className="grid h-7 w-9 place-items-center rounded-[7px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Close window" onClick={() => setWindowStatus("Close requested")}>
-          <CodexIcon name="x" className="size-[18px]" />
+        <button className="codex-icon-button !h-[var(--codex-control-xs)] !w-9" type="button" aria-label="Close window" onClick={() => setWindowStatus("Close requested")}>
+          <CodexIcon name="x" className="codex-icon-md" />
         </button>
       </div>
     </header>

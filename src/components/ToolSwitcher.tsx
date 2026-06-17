@@ -20,16 +20,14 @@ export function ToolSwitcher({ onSetView }: ToolSwitcherProps) {
         {tools.map((tool, index) => (
           <button
             key={tool.label}
-            className={[
-              "flex h-[52px] w-full items-center gap-3 rounded-[12px] px-3 text-left text-[14px] transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
-              index === 0 ? "bg-[var(--codex-active)]" : "hover:bg-[var(--codex-hover)]",
-            ].join(" ")}
+            className="codex-row-button codex-row-xl gap-3 px-3 text-[var(--codex-type-base)]"
+            data-active={index === 0}
             type="button"
             onClick={() => onSetView(tool.view)}
           >
             <CodexIcon name={tool.icon} className="size-5 text-[var(--codex-text-muted)]" />
             <span className="flex-1">{tool.label}</span>
-            <span className="rounded-[7px] bg-[var(--codex-surface-muted)] px-2 py-1 text-[11px] text-[var(--codex-text-faint)]">{tool.shortcut}</span>
+            <span className="codex-badge">{tool.shortcut}</span>
           </button>
         ))}
       </div>

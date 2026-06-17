@@ -64,23 +64,23 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
   return (
     <section ref={shellRef} className="relative flex h-full min-h-0 overflow-hidden">
       <div ref={workspaceRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-[58px] shrink-0 items-center justify-between border-b border-[var(--codex-border-soft)] px-4">
+        <header className="codex-workspace-bar flex shrink-0 items-center justify-between border-b px-4">
           <div className="flex min-w-0 items-center gap-2">
-            <button className="grid size-8 place-items-center rounded-[9px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]" type="button" aria-label="New chat">
-              <CodexIcon name="newChat" className="size-[17px]" />
+            <button className="codex-icon-button !size-[var(--codex-control-sm)]" type="button" aria-label="New chat">
+              <CodexIcon name="newChat" className="size-[1.0625rem]" />
             </button>
             <div className="min-w-0">
-              <div className="truncate text-[14px] font-medium">页面的设计</div>
+              <div className="truncate text-[0.875rem] font-medium">页面的设计</div>
             </div>
-            <button className="grid size-7 place-items-center rounded-[8px] text-[var(--codex-text-muted)] hover:bg-[var(--codex-hover)]" type="button" aria-label="Thread options" onClick={onOpenCommandMenu}>
-              <CodexIcon name="more" className="size-[16px]" />
+            <button className="codex-icon-button !size-[var(--codex-control-xs)]" type="button" aria-label="Thread options" onClick={onOpenCommandMenu}>
+              <CodexIcon name="more" className="size-[1rem]" />
             </button>
           </div>
           <div className="relative flex items-center gap-1 text-[var(--codex-text-muted)]">
             {hasToolOverlay ? (
               <>
                 <button
-                  className="flex h-9 items-center gap-1.5 rounded-[12px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_65%,transparent)] px-2.5 shadow-[0_6px_18px_rgb(76_79_105_/_0.05)] hover:bg-[var(--codex-hover)]"
+                  className="codex-command-button"
                   type="button"
                   aria-label="Open with"
                   onClick={() => {
@@ -88,14 +88,12 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
                     setSummaryOpen(false);
                   }}
                 >
-                  <CodexIcon name="openWith" className="size-[18px] text-[var(--codex-text)]" />
-                  <CodexIcon name="chevronDown" className="size-[14px]" />
+                  <CodexIcon name="openWith" className="codex-icon-md text-[var(--codex-text)]" />
+                  <CodexIcon name="chevronDown" className="codex-icon-sm" />
                 </button>
                 <button
-                  className={[
-                    "grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]",
-                    summaryOpen ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "",
-                  ].join(" ")}
+                  className="codex-icon-button"
+                  data-active={summaryOpen}
                   type="button"
                   aria-label="Toggle summary"
                   onClick={() => {
@@ -103,10 +101,10 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
                     setOpenWithMenuOpen(false);
                   }}
                 >
-                  <CodexIcon name="summary" className="size-[19px]" />
+                  <CodexIcon name="summary" className="codex-icon-lg" />
                 </button>
                 {openWithMenuOpen ? (
-                  <div className="absolute right-10 top-[calc(100%+8px)] z-50 w-[200px] rounded-[14px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_94%,transparent)] p-2 text-[14px] text-[var(--codex-text)] shadow-[var(--codex-shadow-soft)] backdrop-blur">
+                  <div className="codex-popover absolute right-10 top-[calc(100%+0.5rem)] w-[var(--codex-menu-width-sm)] p-2 text-[0.875rem] text-[var(--codex-text)]">
                     {([
                       ["Visual Studio", "app"],
                       ["Zed", "openWith"],
@@ -116,42 +114,42 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
                       ["WSL", "browser"],
                       ["Android Studio", "app"],
                     ] as Array<[string, IconName]>).map(([label, icon]) => (
-                      <button key={label} className="flex h-9 w-full items-center gap-2 rounded-[9px] px-2 text-left hover:bg-[var(--codex-hover)]" type="button">
-                        <CodexIcon name={icon} className="size-[18px] text-[var(--codex-text-muted)]" />
+                      <button key={label} className="codex-row-button codex-row-md gap-2" type="button">
+                        <CodexIcon name={icon} className="codex-icon-md text-[var(--codex-text-muted)]" />
                         <span className="truncate">{label}</span>
                       </button>
                     ))}
                   </div>
                 ) : null}
                 {summaryOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+11px)] z-50 w-[374px] rounded-[20px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_94%,transparent)] p-5 text-[14px] text-[var(--codex-text)] shadow-[var(--codex-shadow-soft)] backdrop-blur">
+                  <div className="codex-popover absolute right-0 top-[calc(100%+0.6875rem)] w-[var(--codex-menu-width-md)] p-5 text-[0.875rem] text-[var(--codex-text)]">
                     <div className="mb-4 flex items-center justify-between">
                       <span className="text-[var(--codex-text-faint)]">Environment</span>
-                      <CodexIcon name="settings" className="size-[18px] text-[var(--codex-text-faint)]" />
+                      <CodexIcon name="settings" className="size-[1.125rem] text-[var(--codex-text-faint)]" />
                     </div>
                     <div className="space-y-3.5">
                       <div className="flex items-center gap-3">
-                        <CodexIcon name="diff" className="size-[18px]" />
+                        <CodexIcon name="diff" className="size-[1.125rem]" />
                         <span className="flex-1">Changes</span>
                         <span className="text-[var(--codex-diff-added)]">+753</span>
                         <span className="text-[var(--codex-diff-removed)]">-170</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <CodexIcon name="tray" className="size-[18px]" />
+                        <CodexIcon name="tray" className="size-[1.125rem]" />
                         <span>Local</span>
-                        <CodexIcon name="chevronDown" className="size-[14px]" />
+                        <CodexIcon name="chevronDown" className="size-[0.875rem]" />
                       </div>
                       <div className="flex items-center gap-3">
-                        <CodexIcon name="branch" className="size-[18px]" />
+                        <CodexIcon name="branch" className="size-[1.125rem]" />
                         <span>main</span>
-                        <CodexIcon name="chevronDown" className="size-[14px]" />
+                        <CodexIcon name="chevronDown" className="size-[0.875rem]" />
                       </div>
                       <div className="flex items-center gap-3">
-                        <CodexIcon name="history" className="size-[18px]" />
+                        <CodexIcon name="history" className="size-[1.125rem]" />
                         <span>Commit or push</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <CodexIcon name="browser" className="size-[18px]" />
+                        <CodexIcon name="browser" className="size-[1.125rem]" />
                         <span>Create pull request</span>
                       </div>
                     </div>
@@ -165,27 +163,25 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
             ) : (
               <>
               <button
-                className="flex h-9 items-center gap-1.5 rounded-[12px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_65%,transparent)] px-2.5 shadow-[0_6px_18px_rgb(76_79_105_/_0.05)] hover:bg-[var(--codex-hover)]"
+                className="codex-command-button"
                 type="button"
                 aria-label="Open terminal"
                 onClick={() => onSetView("terminal")}
               >
-                <CodexIcon name="terminal" className="size-[18px] text-[var(--codex-text)]" />
-                <CodexIcon name="chevronDown" className="size-[14px]" />
+                <CodexIcon name="terminal" className="codex-icon-md text-[var(--codex-text)]" />
+                <CodexIcon name="chevronDown" className="codex-icon-sm" />
               </button>
               <button
-                className={[
-                  "grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]",
-                  environmentOpen ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "",
-                ].join(" ")}
+                className="codex-icon-button"
+                data-active={environmentOpen}
                 type="button"
                 aria-label="Toggle environment panel"
                 onClick={() => setEnvironmentOpen((open) => !open)}
               >
-                <CodexIcon name="layout" className="size-[19px]" />
+                <CodexIcon name="layout" className="codex-icon-lg" />
               </button>
               <button
-                className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]"
+                className="codex-icon-button"
                 type="button"
                 aria-label="Minimize tool panel"
                 onClick={() => {
@@ -193,10 +189,10 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
                   setEnvironmentOpen(false);
                 }}
               >
-                <CodexIcon name="minimize" className="size-[18px]" />
+                <CodexIcon name="minimize" className="codex-icon-md" />
               </button>
-              <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Toggle side panel" onClick={() => onSetView("files")}>
-                <CodexIcon name="panel" className="size-[18px]" />
+              <button className="codex-icon-button" type="button" aria-label="Toggle side panel" onClick={() => onSetView("files")}>
+                <CodexIcon name="panel" className="codex-icon-md" />
               </button>
               </>
             )}
@@ -224,7 +220,7 @@ export function ChatWorkspace({ activeView, onOpenCommandMenu, onSetView }: Chat
             }}
           />
           {!hasToolOverlay && environmentOpen && geometry.canReserveEnvironment ? (
-            <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} panelWidth={geometry.environmentPanelWidth} rightInset={geometry.environmentRightInset} topInset={geometry.environmentTopInset} />
+            <EnvironmentCard items={environmentItems} progress={progressItems} subagents={subagents} running={running} style={geometry.environmentStyle} />
           ) : null}
         </div>
       </div>

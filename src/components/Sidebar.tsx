@@ -5,6 +5,10 @@ import { primaryActions } from "../data/scenarios/commandScenario";
 import type { ActiveView, ProjectGroup } from "../types";
 import { CodexIcon } from "./CodexIcon";
 
+const PREVIEW_GAP_RATIO = 0.0014;
+const PREVIEW_VIEWPORT_PADDING_RATIO = 0.006;
+const PREVIEW_WIDTH_RATIO = 0.94;
+
 interface SidebarProps {
   activeThreadId: string;
   groups: ProjectGroup[];
@@ -31,9 +35,9 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
 
   const showThreadPreview = (event: ReactMouseEvent<HTMLElement> | ReactFocusEvent<HTMLElement>, title: string, time: string, branch: string) => {
     const bounds = event.currentTarget.getBoundingClientRect();
-    const viewportPadding = Math.round(window.innerWidth * 0.006);
-    const previewGap = 2;
-    const preferredWidth = Math.round(bounds.width * 0.94);
+    const viewportPadding = Math.round(window.innerWidth * PREVIEW_VIEWPORT_PADDING_RATIO);
+    const previewGap = Math.round(window.innerWidth * PREVIEW_GAP_RATIO);
+    const preferredWidth = Math.round(bounds.width * PREVIEW_WIDTH_RATIO);
     const left = bounds.right + previewGap + preferredWidth + viewportPadding <= window.innerWidth ? Math.round(bounds.right + previewGap) : Math.round(Math.max(viewportPadding, bounds.left));
     setHoveredThreadPreview({
       title,
@@ -52,7 +56,7 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
         if (!docked) onFloatingMouseLeave();
       }}
       className={[
-        "z-40 flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[15px] text-[var(--codex-text-muted)] transition-[transform,box-shadow] duration-[var(--codex-motion-slow)] ease-[var(--codex-motion-ease-out)] will-change-transform lg:text-[14px]",
+        "codex-layer-drawer flex h-full w-[var(--sidebar-width)] shrink-0 flex-col overflow-visible bg-[var(--codex-sidebar)] px-2.5 pb-3 pt-2 text-[0.9375rem] text-[var(--codex-text-muted)] transition-[transform,box-shadow] duration-[var(--codex-motion-slow)] ease-[var(--codex-motion-ease-out)] will-change-transform lg:text-[0.875rem]",
         docked ? "lg:relative lg:translate-x-0" : "lg:absolute lg:inset-y-0 lg:left-0 lg:shadow-[var(--codex-shadow)]",
         "max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[min(var(--sidebar-width),calc(100vw_-_var(--sidebar-floating-edge)))] max-lg:shadow-[var(--codex-shadow)]",
         docked ? "max-lg:-translate-x-full" : "",
@@ -66,31 +70,32 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
         {primaryActions.map((action) => (
           <button
             key={action.id}
-            className="grid h-10 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
+            className="codex-sidebar-row min-h-10"
             type="button"
             onClick={() => {
               if (action.opensPalette) onOpenPalette();
               if (action.view) onSetView(action.view);
             }}
           >
-            <CodexIcon name={action.icon} className="mx-auto size-[18px] text-[var(--codex-text)]" />
+            <CodexIcon name={action.icon} className="mx-auto size-[1.125rem] text-[var(--codex-text)]" />
             <span className="truncate leading-none">{action.label}</span>
           </button>
         ))}
       </div>
 
       <div className="mt-6 flex-1 overflow-y-auto pr-0.5">
-        <div className="mb-4 px-1.5 text-[15px] leading-none text-[var(--codex-text-faint)] lg:text-[14px]">Projects</div>
+        <div className="mb-4 px-1.5 text-[0.9375rem] leading-none text-[var(--codex-text-faint)] lg:text-[0.875rem]">Projects</div>
         <div className="space-y-3.5">
           {groups.map((group) => (
             <section key={group.id}>
               <button
-                className={["mb-0.5 grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[15px] text-[var(--codex-text)] hover:bg-[var(--codex-hover)] lg:text-[14px]", activeProjectId === group.id ? "bg-[var(--codex-active)]" : ""].join(" ")}
+                className="codex-sidebar-row mb-0.5 h-8 text-[0.9375rem] text-[var(--codex-text)] lg:text-[0.875rem]"
+                data-active={activeProjectId === group.id}
                 type="button"
                 title={group.path}
                 onClick={() => setActiveProjectId(group.id)}
               >
-                <CodexIcon name="folder" className="mx-auto size-[17px] text-[var(--codex-text)]" />
+                <CodexIcon name="folder" className="mx-auto size-[1.0625rem] text-[var(--codex-text)]" />
                 <span className="truncate leading-none">{group.name}</span>
               </button>
               <div className="space-y-0.5">
@@ -105,9 +110,10 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                     >
                       <button
                         className={[
-                          "grid h-9 w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] px-1.5 text-left transition-colors duration-[var(--codex-motion-fast)] ease-[var(--codex-motion-ease)]",
-                          active ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "hover:bg-[var(--codex-hover)]",
+                          "codex-sidebar-row h-9 grid-cols-[1.5rem_minmax(0,1fr)_auto]",
+                          active ? "text-[var(--codex-text)]" : "",
                         ].join(" ")}
+                        data-active={active}
                         type="button"
                         onClick={() => {
                           onSelectThread(thread.id);
@@ -121,15 +127,15 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                         {thread.running ? (
                           <span className="size-2.5 shrink-0 rounded-full bg-[var(--codex-accent)] group-hover/thread:opacity-0" />
                         ) : (
-                          <span className="shrink-0 text-[12px] leading-none text-[var(--codex-text-faint)] group-hover/thread:opacity-0">{thread.time}</span>
+                          <span className="shrink-0 text-[0.75rem] leading-none text-[var(--codex-text-faint)] group-hover/thread:opacity-0">{thread.time}</span>
                         )}
                       </button>
                       <div className="pointer-events-none absolute right-1.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 text-[var(--codex-text-faint)] group-hover/thread:flex">
-                        <span className="grid size-[22px] place-items-center rounded-[6px] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
-                          <CodexIcon name="pin" className="size-[15px]" />
+                        <span className="grid size-[1.375rem] place-items-center rounded-[0.375rem] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
+                          <CodexIcon name="pin" className="size-[0.9375rem]" />
                         </span>
-                        <span className="grid size-[22px] place-items-center rounded-[6px] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
-                          <CodexIcon name="tray" className="size-[15px]" />
+                        <span className="grid size-[1.375rem] place-items-center rounded-[0.375rem] bg-[color-mix(in_oklab,var(--codex-sidebar)_72%,transparent)]">
+                          <CodexIcon name="tray" className="size-[0.9375rem]" />
                         </span>
                       </div>
                     </div>
@@ -137,7 +143,7 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
                 })}
                 {group.threads.length > 3 ? (
                   <button
-                    className="grid h-8 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left text-[13px] leading-none text-[var(--codex-text-faint)] hover:bg-[var(--codex-hover)]"
+                    className="codex-sidebar-row h-8 text-[0.8125rem] leading-none text-[var(--codex-text-faint)]"
                     type="button"
                     onClick={() => setExpandedGroups((ids) => (ids.includes(group.id) ? ids.filter((id) => id !== group.id) : [...ids, group.id]))}
                   >
@@ -152,24 +158,24 @@ export function Sidebar({ activeThreadId, groups, onOpenPalette, onSelectThread,
       </div>
 
       <button
-        className="mt-3 grid h-10 w-full grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded-[9px] px-1.5 text-left hover:bg-[var(--codex-hover)]"
+        className="codex-sidebar-row mt-3 min-h-10"
         type="button"
         onClick={() => onSetView("settings")}
       >
-        <CodexIcon name="settings" className="mx-auto size-[19px] text-[var(--codex-text)]" />
+        <CodexIcon name="settings" className="mx-auto size-[1.1875rem] text-[var(--codex-text)]" />
         <span className="truncate leading-none">Settings</span>
       </button>
       {hoveredThreadPreview
         ? createPortal(
             <div
-              className="pointer-events-none fixed z-[70] overflow-hidden rounded-[13px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3 py-2 text-[13px] text-[var(--codex-text)] shadow-[var(--codex-shadow-soft)]"
+              className="codex-popover codex-layer-overlay pointer-events-none fixed px-3 py-2 text-[0.8125rem] text-[var(--codex-text)]"
               style={{ left: hoveredThreadPreview.left, top: hoveredThreadPreview.top, width: hoveredThreadPreview.width }}
             >
               <div className="flex h-7 items-center gap-3">
                 <div className="min-w-0 flex-1 truncate font-medium">{hoveredThreadPreview.title}</div>
-                <div className="shrink-0 text-[12px] text-[var(--codex-text-faint)]">{hoveredThreadPreview.time}</div>
+                <div className="shrink-0 text-[0.75rem] text-[var(--codex-text-faint)]">{hoveredThreadPreview.time}</div>
               </div>
-              <div className="flex h-6 items-center gap-2 text-[12px] text-[var(--codex-text-muted)]">
+              <div className="flex h-6 items-center gap-2 text-[0.75rem] text-[var(--codex-text-muted)]">
                 <CodexIcon name="branch" className="size-4 shrink-0" />
                 <span className="truncate">{hoveredThreadPreview.branch}</span>
               </div>

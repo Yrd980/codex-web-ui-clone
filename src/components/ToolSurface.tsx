@@ -100,7 +100,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
   const resizeHandle = (
     <button
       className={[
-        "group absolute inset-y-0 left-0 z-30 hidden w-7 -translate-x-3.5 cursor-col-resize touch-none outline-none lg:block",
+        "codex-layer-resize group absolute inset-y-0 left-0 hidden w-7 -translate-x-3.5 cursor-col-resize touch-none outline-none lg:block",
         panelResizing ? "bg-[color-mix(in_oklab,var(--codex-accent)_8%,transparent)]" : "",
       ].join(" ")}
       type="button"
@@ -121,7 +121,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
   if (activeView === "tool-switcher") {
     return (
       <div
-        className="absolute right-[var(--tool-switcher-edge-gap)] top-1/2 z-20 h-[min(var(--tool-switcher-height),calc(100%_-_var(--tool-switcher-vertical-clearance)))] w-[min(var(--tool-switcher-width),calc(100%_-_var(--tool-switcher-edge-gap)_-_var(--tool-switcher-edge-gap)))] -translate-y-1/2 overflow-hidden rounded-[18px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-main)_92%,transparent)] shadow-[var(--codex-shadow-soft)]"
+        className="codex-surface-panel codex-layer-floating absolute right-[var(--tool-switcher-edge-gap)] top-1/2 h-[min(var(--tool-switcher-height),calc(100%_-_var(--tool-switcher-vertical-clearance)))] w-[min(var(--tool-switcher-width),calc(100%_-_var(--tool-switcher-edge-gap)_-_var(--tool-switcher-edge-gap)))] -translate-y-1/2 overflow-hidden"
         style={geometry.toolSwitcherStyle}
       >
         <ToolSwitcher onSetView={onSetView} />
@@ -148,8 +148,7 @@ export function ToolSurface({ activeView, workspaceRef, workspaceWidth, workspac
           browserUrl={browserUrl}
           browserUseEnabled={browserUseEnabled}
           annotationMode={annotationMode}
-          previewInsetX={geometry.browserPreviewInsetX}
-          previewInsetY={geometry.browserPreviewInsetY}
+          previewStyle={geometry.browserPreviewStyle}
           onBack={() => setBrowserIndex((index) => Math.max(0, index - 1))}
           onForward={() => setBrowserIndex((index) => Math.min(browserHistory.length - 1, index + 1))}
           onToggleAnnotationMode={() => setAnnotationMode((enabled) => !enabled)}
@@ -185,32 +184,34 @@ function ToolPanelControls({
   return (
     <div className="flex items-center gap-1 text-[var(--codex-text-muted)]">
       <button
-        className="flex h-9 items-center gap-1.5 rounded-[12px] border border-[var(--codex-border-soft)] bg-[color-mix(in_oklab,var(--codex-surface-raised)_65%,transparent)] px-2.5 shadow-[0_6px_18px_rgb(76_79_105_/_0.05)] hover:bg-[var(--codex-hover)]"
+        className="codex-command-button"
         type="button"
         aria-label="Open terminal"
         onClick={() => onSetView(activeView === "terminal" ? "files" : "terminal")}
       >
-        <CodexIcon name="terminal" className="size-[18px] text-[var(--codex-text)]" />
-        <CodexIcon name="chevronDown" className="size-[14px]" />
+        <CodexIcon name="terminal" className="codex-icon-md text-[var(--codex-text)]" />
+        <CodexIcon name="chevronDown" className="codex-icon-sm" />
       </button>
       <button
-        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", environmentOpen ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        className="codex-icon-button"
+        data-active={environmentOpen}
         type="button"
         aria-label="Toggle environment panel"
         onClick={onToggleEnvironment}
       >
-        <CodexIcon name="layout" className="size-[19px]" />
+        <CodexIcon name="layout" className="codex-icon-lg" />
       </button>
-      <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
-        <CodexIcon name="minimize" className="size-[18px]" />
+      <button className="codex-icon-button" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
+        <CodexIcon name="minimize" className="codex-icon-md" />
       </button>
       <button
-        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", activeView !== "chat" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        className="codex-icon-button"
+        data-active={activeView !== "chat"}
         type="button"
         aria-label="Toggle side panel"
         onClick={() => onSetView("chat")}
       >
-        <CodexIcon name="panel" className="size-[18px]" />
+        <CodexIcon name="panel" className="codex-icon-md" />
       </button>
     </div>
   );
@@ -227,16 +228,17 @@ function ToolPanelEndControls({
 }) {
   return (
     <div className="flex shrink-0 items-center gap-1 text-[var(--codex-text-muted)]">
-      <button className="grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
-        <CodexIcon name="minimize" className="size-[18px]" />
+      <button className="codex-icon-button" type="button" aria-label="Minimize tool panel" onClick={onMinimizeTools}>
+        <CodexIcon name="minimize" className="codex-icon-md" />
       </button>
       <button
-        className={["grid size-9 place-items-center rounded-[11px] hover:bg-[var(--codex-hover)]", activeView !== "chat" ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : ""].join(" ")}
+        className="codex-icon-button"
+        data-active={activeView !== "chat"}
         type="button"
         aria-label="Toggle side panel"
         onClick={() => onSetView("chat")}
       >
-        <CodexIcon name="panel" className="size-[18px]" />
+        <CodexIcon name="panel" className="codex-icon-md" />
       </button>
     </div>
   );
@@ -245,7 +247,7 @@ function ToolPanelEndControls({
 function ToolPanelFrame({ style, children }: { style: CSSProperties; children: ReactNode }) {
   return (
     <div
-      className="absolute inset-y-0 right-0 z-20 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] lg:relative lg:inset-auto lg:w-[var(--tool-panel-width)] lg:min-w-0 lg:flex-none lg:shadow-none"
+      className="codex-layer-floating absolute inset-y-0 right-0 flex w-[min(var(--tool-panel-width),calc(100%_-_var(--panel-overlay-edge)))] overflow-hidden border-l border-[var(--codex-border-soft)] bg-[var(--codex-main)] text-[var(--codex-text-muted)] shadow-[var(--codex-shadow-soft)] lg:relative lg:inset-auto lg:w-[var(--tool-panel-width)] lg:min-w-0 lg:flex-none lg:shadow-none"
       style={style}
     >
       {children}
@@ -256,13 +258,13 @@ function ToolPanelFrame({ style, children }: { style: CSSProperties; children: R
 function TerminalPanel({ terminalLines, onClear }: { terminalLines: string[]; onClear: () => void }) {
   return (
     <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)]">
-      <div className="flex h-11 items-center justify-between border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-muted)]">
+      <div className="codex-panel-bar flex items-center justify-between border-b px-3 text-[0.75rem]">
         <span>Terminal</span>
-        <button className="h-8 rounded-[9px] bg-[var(--codex-surface-muted)] px-3" type="button" onClick={onClear}>
+        <button className="codex-muted-button" type="button" onClick={onClear}>
           Clear
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto p-4 text-[12px] leading-6">
+      <div className="min-h-0 flex-1 overflow-auto p-4 text-[0.75rem] leading-6">
         {terminalLines.length ? (
           terminalLines.map((line) => (
             <div key={line}>
@@ -282,8 +284,7 @@ interface BrowserPanelProps {
   browserUrl: string;
   browserUseEnabled: boolean;
   annotationMode: boolean;
-  previewInsetX: number;
-  previewInsetY: number;
+  previewStyle: CSSProperties;
   onBack: () => void;
   onForward: () => void;
   onToggleAnnotationMode: () => void;
@@ -295,8 +296,7 @@ function BrowserPanel({
   browserUrl,
   browserUseEnabled,
   annotationMode,
-  previewInsetX,
-  previewInsetY,
+  previewStyle,
   onBack,
   onForward,
   onToggleAnnotationMode,
@@ -304,49 +304,48 @@ function BrowserPanel({
 }: BrowserPanelProps) {
   return (
     <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)]">
-      <div className="flex h-11 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-muted)]">
-        <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)] disabled:text-[var(--codex-text-faint)]" type="button" aria-label="Back in browser" disabled={browserIndex === 0} onClick={onBack}>
+      <div className="codex-panel-bar flex items-center gap-2 border-b px-3 text-[0.75rem]">
+        <button className="codex-icon-button !size-[var(--codex-control-sm)] disabled:text-[var(--codex-text-faint)]" type="button" aria-label="Back in browser" disabled={browserIndex === 0} onClick={onBack}>
           <CodexIcon name="back" className="size-4" />
         </button>
-        <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)] disabled:text-[var(--codex-text-faint)]" type="button" aria-label="Forward in browser" disabled={browserIndex === browserHistory.length - 1} onClick={onForward}>
+        <button className="codex-icon-button !size-[var(--codex-control-sm)] disabled:text-[var(--codex-text-faint)]" type="button" aria-label="Forward in browser" disabled={browserIndex === browserHistory.length - 1} onClick={onForward}>
           <CodexIcon name="forward" className="size-4" />
         </button>
-        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)] px-3">
+        <div className="codex-field !min-h-[var(--codex-control-sm)] min-w-0 flex-1 bg-[var(--codex-surface-raised)] px-3">
           <CodexIcon name="globe" className="size-4" />
           <span className="truncate">{browserUrl}</span>
         </div>
-        <button className={["h-8 rounded-[9px] px-3", annotationMode ? "bg-[var(--codex-active)] text-[var(--codex-text)]" : "bg-[var(--codex-surface-muted)]"].join(" ")} type="button" onClick={onToggleAnnotationMode}>
+        <button className="codex-muted-button" data-active={annotationMode} type="button" onClick={onToggleAnnotationMode}>
           Annotate
         </button>
-        <button className={["h-8 rounded-[9px] px-3", browserUseEnabled ? "bg-[var(--codex-surface-muted)] text-[var(--codex-text)]" : "bg-transparent text-[var(--codex-text-faint)]"].join(" ")} type="button" onClick={onToggleBrowserUse}>
+        <button className={["codex-muted-button", browserUseEnabled ? "text-[var(--codex-text)]" : "bg-transparent text-[var(--codex-text-faint)]"].join(" ")} type="button" onClick={onToggleBrowserUse}>
           {browserUseEnabled ? "Browser use on" : "Browser use off"}
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden bg-[color-mix(in_oklab,var(--codex-surface-raised)_45%,var(--codex-main))]">
         <div
-          className="mx-auto h-[calc(100%_-_var(--browser-preview-inset-y)_-_var(--browser-preview-inset-y))] w-[calc(100%_-_var(--browser-preview-inset-x)_-_var(--browser-preview-inset-x))] overflow-hidden rounded-[12px] border border-[var(--codex-border-soft)] bg-[var(--codex-surface-raised)]"
+          className="codex-list-panel mx-auto h-[calc(100%_-_var(--browser-preview-inset-y)_-_var(--browser-preview-inset-y))] w-[calc(100%_-_var(--browser-preview-inset-x)_-_var(--browser-preview-inset-x))] bg-[var(--codex-surface-raised)]"
           style={
             {
-              "--browser-preview-inset-x": `${previewInsetX}px`,
-              "--browser-preview-inset-y": `${previewInsetY}px`,
-              marginTop: previewInsetY,
+              ...previewStyle,
+              marginTop: "var(--browser-preview-inset-y)",
             } as CSSProperties
           }
         >
-          <div className="flex h-10 items-center gap-2 border-b border-[var(--codex-border-soft)] px-3 text-[12px] text-[var(--codex-text-faint)]">
+          <div className="codex-compact-bar flex items-center gap-2 border-b px-3">
             <span className="size-2 rounded-full bg-[var(--codex-border)]" />
             <span className="size-2 rounded-full bg-[var(--codex-border)]" />
             <span className="size-2 rounded-full bg-[var(--codex-border)]" />
             <span className="ml-2 truncate">{browserUrl.replace(/^https?:\/\//, "")}</span>
           </div>
-          <div className="px-6 py-5 text-[13px] leading-6 text-[var(--codex-text-muted)]">
-            <div className="mb-4 h-4 w-40 rounded-[6px] bg-[var(--codex-surface-muted)]" />
+          <div className="px-6 py-5 text-[0.8125rem] leading-6 text-[var(--codex-text-muted)]">
+            <div className="mb-4 h-4 w-40 rounded-[var(--codex-radius-xs)] bg-[var(--codex-surface-muted)]" />
             <div className="space-y-2">
-              <div className="h-3 w-full max-w-[72%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
-              <div className="h-3 w-full max-w-[64%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
-              <div className="h-3 w-full max-w-[54%] rounded-[4px] bg-[var(--codex-surface-muted)]" />
+              <div className="h-3 w-full max-w-[var(--codex-skeleton-line-lg)] rounded-[var(--codex-radius-xs)] bg-[var(--codex-surface-muted)]" />
+              <div className="h-3 w-full max-w-[var(--codex-skeleton-line-md)] rounded-[var(--codex-radius-xs)] bg-[var(--codex-surface-muted)]" />
+              <div className="h-3 w-full max-w-[var(--codex-skeleton-line-sm)] rounded-[var(--codex-radius-xs)] bg-[var(--codex-surface-muted)]" />
             </div>
-            {annotationMode ? <div className="mt-6 inline-flex rounded-[10px] border border-[var(--codex-accent)] bg-[color-mix(in_oklab,var(--codex-accent)_9%,transparent)] px-3 py-2 text-[12px] text-[var(--codex-accent)]">Comment pinned</div> : null}
+            {annotationMode ? <div className="mt-6 inline-flex rounded-[0.625rem] border border-[var(--codex-accent)] bg-[color-mix(in_oklab,var(--codex-accent)_9%,transparent)] px-3 py-2 text-[0.75rem] text-[var(--codex-accent)]">Comment pinned</div> : null}
           </div>
         </div>
       </div>
@@ -366,10 +365,10 @@ function AdminPanel({ activeView, enabledPlugins, enabledAutomations, onTogglePl
   const items = activeView === "plugins" ? ["Browser", "GitHub", "OpenAI Developers", "Slack", "Computer Use"] : ["Build monitor", "Thread follow-up", "Browser regression check"];
 
   return (
-    <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)] text-[12px] text-[var(--codex-text-muted)]">
-      <div className="flex h-11 items-center justify-between border-b border-[var(--codex-border-soft)] px-3">
+    <div className="flex h-full min-w-0 flex-col bg-[var(--codex-main)] text-[0.75rem] text-[var(--codex-text-muted)]">
+      <div className="codex-panel-bar flex items-center justify-between border-b px-3">
         <span className="text-[var(--codex-text)]">{activeView === "plugins" ? "Plugins" : "Automations"}</span>
-        <button className="grid size-8 place-items-center rounded-[9px] hover:bg-[var(--codex-hover)]" type="button" aria-label="Panel settings">
+        <button className="codex-icon-button !size-[var(--codex-control-sm)]" type="button" aria-label="Panel settings">
           <CodexIcon name="settings" className="size-4" />
         </button>
       </div>
@@ -379,7 +378,7 @@ function AdminPanel({ activeView, enabledPlugins, enabledAutomations, onTogglePl
           return (
             <button
               key={item}
-              className="flex min-h-10 w-full items-center gap-3 rounded-[9px] px-3 text-left hover:bg-[var(--codex-hover)]"
+              className="codex-row-button codex-row-md gap-3 px-3"
               type="button"
               onClick={() => {
                 if (activeView === "plugins") {
@@ -391,8 +390,8 @@ function AdminPanel({ activeView, enabledPlugins, enabledAutomations, onTogglePl
             >
               <CodexIcon name={activeView === "plugins" ? "app" : "automations"} className="size-4 text-[var(--codex-text)]" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] text-[var(--codex-text)]">{item}</span>
-                <span className="block truncate text-[11px] text-[var(--codex-text-faint)]">{active ? "Enabled in this shell" : "Optional"}</span>
+                <span className="block truncate text-[0.8125rem] text-[var(--codex-text)]">{item}</span>
+                <span className="block truncate text-[0.6875rem] text-[var(--codex-text-faint)]">{active ? "Enabled in this shell" : "Optional"}</span>
               </span>
               {active ? <CodexIcon name="check" className="size-4 text-[var(--codex-accent)]" /> : null}
             </button>
